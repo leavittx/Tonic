@@ -9,7 +9,7 @@
 #include "AudioFileUtils.h"
 
 #ifdef __APPLE__
-#include <AudioToolbox/AudioToolbox.h>
+  #include <AudioToolbox/AudioToolbox.h>
 #endif
 
 extern "C"
@@ -17,18 +17,15 @@ extern "C"
   #include <libavcodec/avcodec.h>
   #include <libavformat/avformat.h>
   #include <libavutil/avutil.h>
+  #include <libavutil/opt.h>
+  #include <libswresample/swresample.h>
 }
 
-#define MAX_AUDIO_FRAME_SIZE 192000 
-
-#define INBUF_SIZE 4096
-#define AUDIO_INBUF_SIZE 20480
-#define AUDIO_REFILL_THRESH 4096
 
 namespace Tonic {
 
 
-  #ifdef __APPLE__
+#ifdef __APPLE__
 
   void checkCAError(OSStatus error, const char *operation){
     if (error == noErr) return;
@@ -97,14 +94,15 @@ namespace Tonic {
     ExtAudioFileDispose(inputFile);
     
     return destinationTable;
-    
   }
   
-  #else
+#else
 
-  static int decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame, uint8_t* decodeBuffer) {
+  static int decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, TonicFloat* decodeBuffer) {
+    //static std::vector<float> data;
     int i, ch;
     int ret, data_size;
+    int frame_count;
 
     /* send the packet with the compressed data to the decoder */
     ret = avcodec_send_packet(dec_ctx, pkt);
@@ -117,8 +115,14 @@ namespace Tonic {
     int data_size_total = 0;
     while (ret >= 0) {
       ret = avcodec_receive_frame(dec_ctx, frame);
-      if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
-        break;
+      if (ret == AVERROR(EAGAIN)) {
+        fprintf(stderr, "EAGAIN\n");
+        return data_size_total;
+      }
+      else if (ret == AVERROR_EOF) {
+        fprintf(stderr, "EOF\n");
+        return data_size_total;
+      }
       else if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
         return -1;
@@ -129,24 +133,35 @@ namespace Tonic {
         fprintf(stderr, "Failed to calculate data size\n");
         return -1;
       }
-      for (i = 0; i < frame->nb_samples; i++) {
-        for (ch = 0; ch < dec_ctx->ch_layout.nb_channels; ch++) {
-          memcpy(decodeBuffer, frame->data[ch] + data_size * i, data_size);
-          data_size_total += data_size;
-        }
+
+      // resample frames
+      double* buffer;
+      //av_samples_alloc((uint8_t**)&budffer, NULL, 1, frame->nb_samples, AV_SAMPLE_FMT_FLT, 0);
+      frame_count = swr_convert(swr, 
+                                    (uint8_t**)&decodeBuffer, frame->nb_samples, // out
+                                    (const uint8_t**)frame->data, frame->nb_samples); // in
+      if (frame_count > 0) {
+        decodeBuffer += frame_count;
+        data_size_total += frame_count;
       }
+      // append resampled frames to data
+      //*data = (*)realloc(*data, (*size + frame->nb_samples) * sizeof(double));
+      //memcpy(*data + *size, buffer, frame_count * sizeof(double));
+      //*size += frame_count;
+      //for (i = 0; i < frame->nb_samples; i++) {
+      //  for (ch = 0; ch < dec_ctx->ch_layout.nb_channels; ch++) {
+      //    memcpy(decodeBuffer, frame->data[ch] + data_size * i, data_size);
+      //    data_size_total += data_size;
+      //  }
+      //}
     }
-    return data_size_total;
+    return frame_count;
   }
   
   SampleTable loadAudioFile(string path, int numChannels) {
-#if 1
     const AVCodec* codec;
     AVCodecContext* codecCtx = NULL;
-    AVCodecParserContext* parser = NULL;
     int len, ret;
-    uint8_t* data;
-    size_t   data_size;
     AVPacket* pkt;
     enum AVSampleFormat sfmt;
     int n_channels = 0;
@@ -154,21 +169,14 @@ namespace Tonic {
 
     pkt = av_packet_alloc();
 
-    /// TODO: guess the format
-    //codec = avcodec_find_decoder(AV_CODEC_ID_MP3);
-    //if (!codec) {
-    //  fprintf(stderr, "Codec not found\n");
-    //  return NULL;
-    //}
-
      // get format from audio file
     AVFormatContext* format = avformat_alloc_context();
     if (avformat_open_input(&format, path.data(), NULL, NULL) != 0) {
-      fprintf(stderr, "Could not open file '%s'\n", path.data());
+      cerr << "Could not open file " << path.data();
       return NULL;
     }
     if (avformat_find_stream_info(format, NULL) < 0) {
-      fprintf(stderr, "Could not retrieve stream info from file '%s'\n", path.data());
+      cerr << "Could not retrieve stream info from file " << path.data();
       return NULL;
     }
 
@@ -191,6 +199,7 @@ namespace Tonic {
     if (!codecCtx)
       return AVERROR(ENOMEM);
 
+    /// FIXME: not needed
     ret = avcodec_parameters_to_context(codecCtx, stream->codecpar);
     if (ret < 0)
       return NULL;
@@ -198,38 +207,35 @@ namespace Tonic {
 
     codec = avcodec_find_decoder(codecCtx->codec_id);
 
-
-    //if (avcodec_open2(codecCtx, avcodec_find_decoder(codecCtx->codec_id), NULL) < 0) {
-    //  fprintf(stderr, "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path);
-    //  return NULL;
-    //}
-
-    parser = av_parser_init(codec->id);
-    if (!parser) {
-      fprintf(stderr, "Parser not found\n");
-      return NULL;
-    }
-
-    //codecCtx = avcodec_alloc_context3(codec);
-    //if (!codecCtx) {
-    //  fprintf(stderr, "Could not allocate audio codec context\n");
-    //  return NULL;
-    //}
-
-    /* open it */
     if (avcodec_open2(codecCtx, codec, NULL) < 0) {
-      fprintf(stderr, "Could not open codec\n");
+      fprintf(stderr, "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path.data());
       return NULL;
     }
 
-    /* decode until eof */
-    data = inbuf;
+    // Force decoding to float
+    const int tonic_sample_rate = 44100;
+    const int tonic_channel_count = 2;
+    const int tonic_channel_layout = AV_CH_LAYOUT_STEREO;
+    const AVSampleFormat tonic_sample_fmt = AV_SAMPLE_FMT_FLT; /// TODO: or AV_SAMPLE_FMT_FLTP?
+    SwrContext* swr = swr_alloc();
+    av_opt_set_int(swr, "in_channel_count", codecCtx->channels, 0);
+    av_opt_set_int(swr, "out_channel_count", tonic_channel_count, 0);
+    av_opt_set_int(swr, "in_channel_layout", codecCtx->channel_layout, 0);
+    av_opt_set_int(swr, "out_channel_layout", tonic_channel_layout, 0);
+    av_opt_set_int(swr, "in_sample_rate", codecCtx->sample_rate, 0);
+    av_opt_set_int(swr, "out_sample_rate", tonic_sample_rate, 0);
+    av_opt_set_sample_fmt(swr, "in_sample_fmt", codecCtx->sample_fmt, 0);
+    av_opt_set_sample_fmt(swr, "out_sample_fmt", tonic_sample_fmt, 0); 
+    swr_init(swr);
+    if (!swr_is_initialized(swr)) {
+      fprintf(stderr, "Resampler has not been properly initialized\n");
+      return NULL;
+    }
 
     float duration = static_cast<float>(format->duration) / AV_TIME_BASE;
     int numFrames = static_cast<int>(codecCtx->sample_rate * duration);
     SampleTable destinationTable = SampleTable(numFrames, numChannels);
-    // TODO: force decoding to float
-    uint8_t* decodeDataPtr = reinterpret_cast<uint8_t*>(destinationTable.dataPointer());
+    TonicFloat* decodeDataPtr = destinationTable.dataPointer();
     if (decodeDataPtr == nullptr) {
       cerr << "decodeDataPtr is nullptr" << endl;
       return NULL;
@@ -242,195 +248,28 @@ namespace Tonic {
       return NULL;
     }
 
-    // iterate through frames
-    *data = NULL;
-    //*size = 0;
     while (av_read_frame(format, pkt) >= 0) {
       // decode one frame
-#if 1
       if (pkt->size) {
-        auto decodedSize = decode(codecCtx, pkt, frame, decodeDataPtr);
+        auto decodedSize = decode(codecCtx, pkt, frame, swr, decodeDataPtr);
         if (decodedSize < 0) {
           return NULL;
         }
         decodeDataPtr += decodedSize;
       }
-#else
-      int gotFrame;
-      if (avcodec_decode_audio4(codec, frame, &gotFrame, &pkt) < 0) {
-        break;
-      }
-      if (!gotFrame) {
-        continue;
-      }
-
-      // resample frames
-      double* buffer;
-      av_samples_alloc((uint8_t**)&buffer, NULL, 1, frame->nb_samples, AV_SAMPLE_FMT_DBL, 0);
-      int frame_count = swr_convert(swr, (uint8_t**)&buffer, frame->nb_samples, (const uint8_t**)frame->data, frame->nb_samples);
-      // append resampled frames to data
-      *data = (double*)realloc(*data, (*size + frame->nb_samples) * sizeof(double));
-      memcpy(*data + *size, buffer, frame_count * sizeof(double));
-      *size += frame_count;
-#endif
     }
-
-    //while (data_size > 0) {
-    //  if (!decoded_frame) {
-    //    if (!(decoded_frame = av_frame_alloc())) {
-    //      fprintf(stderr, "Could not allocate audio frame\n");
-    //      return NULL;
-    //    }
-    //  }
-
-    //  ret = av_parser_parse2(parser, codecCtx, &pkt->data, &pkt->size,
-    //                         data, data_size,
-    //                         AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
-    //  if (ret < 0) {
-    //    fprintf(stderr, "Error while parsing\n");
-    //    return NULL;
-    //  }
-    //  data += ret;
-    //  data_size -= ret;
-
-    //  if (pkt->size) {
-    //    auto decodedSize = decode(codecCtx, pkt, decoded_frame, decodeDataPtr);
-    //    if (decodedSize < 0) {
-    //      return NULL;
-    //    }
-    //    decodeDataPtr += decodedSize;
-    //  }
-
-    //  if (data_size < AUDIO_REFILL_THRESH) {
-    //    memmove(inbuf, data, data_size);
-    //    data = inbuf;
-    //    len = fread(data + data_size, 1, AUDIO_INBUF_SIZE - data_size, f);
-    //    if (len > 0)
-    //      data_size += len;
-    //  }
-    //}
 
     /* flush the decoder */
     pkt->data = NULL;
     pkt->size = 0;
-    decode(codecCtx, pkt, frame, decodeDataPtr);
+    decode(codecCtx, pkt, frame, swr, decodeDataPtr);
 
-#else
-    AVCodec* codec;
-    AVCodecContext* c = NULL;
-    int len;
-    FILE* f;
-    uint8_t inbuf[AUDIO_INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
-    AVPacket avpkt;
-    AVFrame* decoded_frame = NULL;
+    av_frame_free(&frame);
+    swr_free(&swr);
+    avcodec_close(codecCtx);
+    avformat_free_context(format);
 
-    bool firstFrame = true;
-
-    av_init_packet(&avpkt);
-
-    /* find the mpeg audio decoder */
-    codec = avcodec_find_decoder(AV_CODEC_ID_MP3);
-    if (!codec) {
-      fprintf(stderr, "Codec not found\n");
-      return NULL;
-    }
-
-    c = avcodec_alloc_context3(codec);
-    if (!c) {
-      fprintf(stderr, "Could not allocate audio codec context\n");
-      return NULL;
-    }
-
-    /* open it */
-    if (avcodec_open2(c, codec, NULL) < 0) {
-      fprintf(stderr, "Could not open codec\n");
-      return NULL;
-    }
-
-    f = fopen(path.data(), "rb");
-    if (!f) {
-      cerr << "Could not open " << path;
-      return NULL;
-    }
-
-    /* decode until eof */
-    avpkt.data = inbuf;
-    avpkt.size = fread(inbuf, 1, AUDIO_INBUF_SIZE, f);
-
-    while (avpkt.size > 0) {
-      int got_frame = 0;
-
-      if (!decoded_frame) {
-        if (!(decoded_frame = av_frame_alloc())) {
-          fprintf(stderr, "Could not allocate audio frame\n");
-          return NULL;
-        }
-      }
-      else
-        av_frame_unref(decoded_frame);
-
-      len = avcodec_decode_audio4(c, decoded_frame, &got_frame, &avpkt);
-      if (len < 0) {
-        fprintf(stderr, "Error while decoding\n");
-        return NULL;
-      }
-      if (got_frame) {
-        if (firstFrame) {
-          ao_sample_format sample_format;
-
-          if (c->sample_fmt == AV_SAMPLE_FMT_U8) {
-            sample_format.bits = 8;
-          }
-          else if (c->sample_fmt == AV_SAMPLE_FMT_S16) {
-            sample_format.bits = 16;
-          }
-          else if (c->sample_fmt == AV_SAMPLE_FMT_S16P) {
-            sample_format.bits = 16;
-          }
-          else if (c->sample_fmt == AV_SAMPLE_FMT_S32) {
-            sample_format.bits = 32;
-          }
-
-          sample_format.channels = c->channels;
-          sample_format.rate = c->sample_rate;
-          sample_format.byte_format = AO_FMT_NATIVE;
-          sample_format.matrix = 0;
-
-          firstFrame = false;
-        }
-
-        /* if a frame has been decoded, output it */
-        int data_size = av_samples_get_buffer_size(NULL, c->channels,
-          decoded_frame->nb_samples,
-          c->sample_fmt, 1);
-
-        // Send the buffer contents to the audio device
-        //ao_play(device, (char*)decoded_frame->data[0], data_size);
-      }
-      avpkt.size -= len;
-      avpkt.data += len;
-      avpkt.dts =
-        avpkt.pts = AV_NOPTS_VALUE;
-      if (avpkt.size < AUDIO_REFILL_THRESH) {
-        /* Refill the input buffer, to avoid trying to decode
-         * incomplete frames. Instead of this, one could also use
-         * a parser, or use a proper container format through
-         * libavformat. */
-        memmove(inbuf, avpkt.data, avpkt.size);
-        avpkt.data = inbuf;
-        len = fread(avpkt.data + avpkt.size, 1,
-          AUDIO_INBUF_SIZE - avpkt.size, f);
-        if (len > 0)
-          avpkt.size += len;
-      }
-    }
-
-    fclose(f);
-
-    avcodec_close(c);
-    av_free(c);
-    av_frame_free(&decoded_frame);
-#endif
+    return destinationTable;
   }
-  #endif
+#endif
 }
