@@ -98,8 +98,19 @@ namespace Tonic {
   
 #else
 
-  static int decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, TonicFloat* decodeBuffer) {
-    //static std::vector<float> data;
+  int getChannelLayout(int numChannels) {
+    switch (numChannels) {
+    case 1:
+      return AV_CH_LAYOUT_MONO;
+    case 2:
+      return AV_CH_LAYOUT_STEREO;
+    default:
+      cerr << numChannels << " channels not supported";
+      return -1;
+    }
+  }
+
+  int decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, TonicFloat* decodeBuffer) {
     int i, ch;
     int ret, data_size;
     int frame_count;
@@ -112,16 +123,16 @@ namespace Tonic {
     }
 
     /* read all the output frames (in general there may be any number of them */
-    int data_size_total = 0;
+    int num_samples_total = 0;
     while (ret >= 0) {
       ret = avcodec_receive_frame(dec_ctx, frame);
       if (ret == AVERROR(EAGAIN)) {
         fprintf(stderr, "EAGAIN\n");
-        return data_size_total;
+        return num_samples_total;
       }
       else if (ret == AVERROR_EOF) {
         fprintf(stderr, "EOF\n");
-        return data_size_total;
+        return num_samples_total;
       }
       else if (ret < 0) {
         fprintf(stderr, "Error during decoding\n");
@@ -135,14 +146,14 @@ namespace Tonic {
       }
 
       // resample frames
-      double* buffer;
+      //double* buffer;
       //av_samples_alloc((uint8_t**)&budffer, NULL, 1, frame->nb_samples, AV_SAMPLE_FMT_FLT, 0);
-      frame_count = swr_convert(swr, 
-                                    (uint8_t**)&decodeBuffer, frame->nb_samples, // out
-                                    (const uint8_t**)frame->data, frame->nb_samples); // in
+      frame_count = swr_convert(swr,
+                                (uint8_t**)&decodeBuffer, frame->nb_samples,      // out
+                                (const uint8_t**)frame->data, frame->nb_samples); // in
       if (frame_count > 0) {
         decodeBuffer += frame_count;
-        data_size_total += frame_count;
+        num_samples_total += frame_count;
       }
       // append resampled frames to data
       //*data = (*)realloc(*data, (*size + frame->nb_samples) * sizeof(double));
@@ -161,15 +172,10 @@ namespace Tonic {
   SampleTable loadAudioFile(string path, int numChannels) {
     const AVCodec* codec;
     AVCodecContext* codecCtx = NULL;
-    int len, ret;
-    AVPacket* pkt;
-    enum AVSampleFormat sfmt;
-    int n_channels = 0;
-    const char* fmt;
+    int ret;
+    AVPacket* pkt = av_packet_alloc();
 
-    pkt = av_packet_alloc();
-
-     // get format from audio file
+    // get format from audio file
     AVFormatContext* format = avformat_alloc_context();
     if (avformat_open_input(&format, path.data(), NULL, NULL) != 0) {
       cerr << "Could not open file " << path.data();
@@ -212,11 +218,12 @@ namespace Tonic {
       return NULL;
     }
 
-    // Force decoding to float
-    const int tonic_sample_rate = 44100;
-    const int tonic_channel_count = 2;
-    const int tonic_channel_layout = AV_CH_LAYOUT_STEREO;
+    // Setup resampling to float format
+    const int tonic_sample_rate = Tonic::sampleRate();
+    const int tonic_channel_count = numChannels;
+    const int tonic_channel_layout = getChannelLayout(numChannels);
     const AVSampleFormat tonic_sample_fmt = AV_SAMPLE_FMT_FLT; /// TODO: or AV_SAMPLE_FMT_FLTP?
+
     SwrContext* swr = swr_alloc();
     av_opt_set_int(swr, "in_channel_count", codecCtx->channels, 0);
     av_opt_set_int(swr, "out_channel_count", tonic_channel_count, 0);
@@ -248,15 +255,22 @@ namespace Tonic {
       return NULL;
     }
 
+    int totalDecodedFrames = 0;
     while (av_read_frame(format, pkt) >= 0) {
-      // decode one frame
+      // decode audio frames one by one
       if (pkt->size) {
-        auto decodedSize = decode(codecCtx, pkt, frame, swr, decodeDataPtr);
-        if (decodedSize < 0) {
+        auto decodedFrames = decode(codecCtx, pkt, frame, swr, decodeDataPtr);
+        if (decodedFrames < 0) {
           return NULL;
         }
-        decodeDataPtr += decodedSize;
+        decodeDataPtr += decodedFrames;
+        totalDecodedFrames += decodedFrames;
       }
+    }
+    cerr << "totalDecodedFrames: " << totalDecodedFrames << "; numFrames: " << numFrames; 
+    // totalDecodedFrames: 661426; numFrames: 663552
+    if (totalDecodedFrames < numFrames) {
+      destinationTable.resize(totalDecodedFrames, numChannels);
     }
 
     /* flush the decoder */
@@ -264,12 +278,13 @@ namespace Tonic {
     pkt->size = 0;
     decode(codecCtx, pkt, frame, swr, decodeDataPtr);
 
+    av_packet_free(&pkt);
     av_frame_free(&frame);
     swr_free(&swr);
     avcodec_close(codecCtx);
     avformat_free_context(format);
 
-    return destinationTable;
+    return destinationTable;  
   }
 #endif
 }
