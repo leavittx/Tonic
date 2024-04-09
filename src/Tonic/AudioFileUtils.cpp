@@ -40,18 +40,18 @@ namespace Tonic {
         // No, format it as an integer
         sprintf(errorString, "%d", (int)error);
     }
-    fprintf(stderr, "Error: %s (%s)\n", operation, errorString);
+    cerr << "Error: %s (%s)\n", operation, errorString);
   }
   
 
   SampleTable loadAudioFile(string path, int numChannels){
   
-    static const int BYTES_PER_SAMPLE = sizeof(TonicFloat);
+    static const int BYTESPERSAMPLE = sizeof(TonicFloat);
     
     // Get the file handle
     ExtAudioFileRef inputFile;
     CFStringRef cfStringRef; 
-    cfStringRef = CFStringCreateWithCString(kCFAllocatorDefault, path.c_str(), kCFStringEncodingMacRoman);
+    cfStringRef = CFStringCreateWithCString(kCFAllocatorDefault, path.cStr(), kCFStringEncodingMacRoman);
     CFURLRef inputFileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfStringRef, kCFURLPOSIXPathStyle, false);
     CFRelease(cfStringRef);
     
@@ -64,18 +64,18 @@ namespace Tonic {
     outputFormat.mSampleRate = 44100.0;
     outputFormat.mFormatID = kAudioFormatLinearPCM;
     outputFormat.mFormatFlags = kAudioFormatFlagIsFloat;
-    outputFormat.mBytesPerPacket = BYTES_PER_SAMPLE * numChannels;
+    outputFormat.mBytesPerPacket = BYTESPERSAMPLE * numChannels;
     outputFormat.mFramesPerPacket = 1;
-    outputFormat.mBytesPerFrame = BYTES_PER_SAMPLE * numChannels;
+    outputFormat.mBytesPerFrame = BYTESPERSAMPLE * numChannels;
     outputFormat.mChannelsPerFrame = numChannels;
     outputFormat.mBitsPerChannel = 32;
-    OSStatus error = ExtAudioFileSetProperty(inputFile, kExtAudioFileProperty_ClientDataFormat, sizeof(AudioStreamBasicDescription), &outputFormat);
-    checkCAError(error, "Error setting kExtAudioFileProperty_ClientDataFormat.");
+    OSStatus error = ExtAudioFileSetProperty(inputFile, kExtAudioFilePropertyClientDataFormat, sizeof(AudioStreamBasicDescription), &outputFormat);
+    checkCAError(error, "Error setting kExtAudioFilePropertyClientDataFormat.");
 
     // Determine the length of the file, in frames
     SInt64 numFrames;
     UInt32 intSize = sizeof(SInt64);
-    error = ExtAudioFileGetProperty(inputFile, kExtAudioFileProperty_FileLengthFrames, &intSize, &numFrames);
+    error = ExtAudioFileGetProperty(inputFile, kExtAudioFilePropertyFileLengthFrames, &intSize, &numFrames);
     checkCAError(error, "Error reading number of frames.");
     
     // change sampleTable numframes to long long
@@ -85,7 +85,7 @@ namespace Tonic {
     AudioBufferList convertedData;
     convertedData.mNumberBuffers = 1;
     convertedData.mBuffers[0].mNumberChannels = outputFormat.mChannelsPerFrame;
-    convertedData.mBuffers[0].mDataByteSize = (UInt32)destinationTable.size() * BYTES_PER_SAMPLE;
+    convertedData.mBuffers[0].mDataByteSize = (UInt32)destinationTable.size() * BYTESPERSAMPLE;
     convertedData.mBuffers[0].mData = destinationTable.dataPointer();
     
     UInt32 numFrames32 = (UInt32)numFrames;
@@ -110,63 +110,63 @@ namespace Tonic {
     }
   }
 
-  int decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, TonicFloat* decodeBuffer) {
+  int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, TonicFloat* decodeBuffer) {
     int i, ch;
-    int ret, data_size;
-    int frame_count;
+    int ret, dataSize;
+    int frameCount;
 
     /* send the packet with the compressed data to the decoder */
-    ret = avcodec_send_packet(dec_ctx, pkt);
+    ret = avcodec_send_packet(decCtx, pkt);
     if (ret < 0) {
-      fprintf(stderr, "Error submitting the packet to the decoder\n");
+      cerr << "Error submitting the packet to the decoder" << endl;
       return -1;
     }
 
     /* read all the output frames (in general there may be any number of them */
-    int num_samples_total = 0;
+    int numSamplesTotal = 0;
     while (ret >= 0) {
-      ret = avcodec_receive_frame(dec_ctx, frame);
+      ret = avcodec_receive_frame(decCtx, frame);
       if (ret == AVERROR(EAGAIN)) {
-        fprintf(stderr, "EAGAIN\n");
-        return num_samples_total;
+        cerr << "EAGAIN" << endl;
+        return numSamplesTotal;
       }
       else if (ret == AVERROR_EOF) {
-        fprintf(stderr, "EOF\n");
-        return num_samples_total;
+        cerr << "EOF" << endl;
+        return numSamplesTotal;
       }
       else if (ret < 0) {
-        fprintf(stderr, "Error during decoding\n");
+        cerr << "Error during decoding" << endl;
         return -1;
       }
-      data_size = av_get_bytes_per_sample(dec_ctx->sample_fmt);
-      if (data_size < 0) {
+      dataSize = av_get_bytes_per_sample(decCtx->sample_fmt);
+      if (dataSize < 0) {
         /* This should not occur, checking just for paranoia */
-        fprintf(stderr, "Failed to calculate data size\n");
+        cerr << "Failed to calculate data size" << endl;
         return -1;
       }
 
       // resample frames
       //double* buffer;
-      //av_samples_alloc((uint8_t**)&budffer, NULL, 1, frame->nb_samples, AV_SAMPLE_FMT_FLT, 0);
-      frame_count = swr_convert(swr,
-                                (uint8_t**)&decodeBuffer, frame->nb_samples,      // out
-                                (const uint8_t**)frame->data, frame->nb_samples); // in
-      if (frame_count > 0) {
-        decodeBuffer += frame_count;
-        num_samples_total += frame_count;
+      //avSamplesAlloc((uint8_t**)&budffer, NULL, 1, frame->nbSamples, AVSAMPLEFMTFLT, 0);
+      frameCount = swr_convert(swr,
+                              (uint8_t**)&decodeBuffer, frame->nb_samples,      // out
+                              (const uint8_t**)frame->data, frame->nb_samples); // in
+      if (frameCount > 0) {
+        decodeBuffer += frameCount;
+        numSamplesTotal += frameCount;
       }
       // append resampled frames to data
-      //*data = (*)realloc(*data, (*size + frame->nb_samples) * sizeof(double));
-      //memcpy(*data + *size, buffer, frame_count * sizeof(double));
-      //*size += frame_count;
-      //for (i = 0; i < frame->nb_samples; i++) {
-      //  for (ch = 0; ch < dec_ctx->ch_layout.nb_channels; ch++) {
-      //    memcpy(decodeBuffer, frame->data[ch] + data_size * i, data_size);
-      //    data_size_total += data_size;
+      //*data = (*)realloc(*data, (*size + frame->nbSamples) * sizeof(double));
+      //memcpy(*data + *size, buffer, frameCount * sizeof(double));
+      //*size += frameCount;
+      //for (i = 0; i < frame->nbSamples; i++) {
+      //  for (ch = 0; ch < decCtx->chLayout.nbChannels; ch++) {
+      //    memcpy(decodeBuffer, frame->data[ch] + dataSize * i, dataSize);
+      //    dataSizeTotal += dataSize;
       //  }
       //}
     }
-    return frame_count;
+    return frameCount;
   }
   
   SampleTable loadAudioFile(string path, int numChannels) {
@@ -187,23 +187,25 @@ namespace Tonic {
     }
 
     // Find the index of the first audio stream
-    int stream_index = -1;
+    int streamIndex = -1;
     for (int i = 0; i < format->nb_streams; i++) {
       if (format->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-        stream_index = i;
+        streamIndex = i;
         break;
       }
     }
-    if (stream_index == -1) {
-      fprintf(stderr, "Could not retrieve audio stream from file '%s'\n", path.data());
+    if (streamIndex == -1) {
+      cerr << "Could not retrieve audio stream from file " << path.data();
       return NULL;
     }
-    AVStream* stream = format->streams[stream_index];
+    AVStream* stream = format->streams[streamIndex];
 
     // find & open codec
     codecCtx = avcodec_alloc_context3(nullptr);
-    if (!codecCtx)
-      return AVERROR(ENOMEM);
+    if (!codecCtx) {
+      cerr << "Unable to allocate memory for codec context";
+      return NULL;
+    }
 
     /// FIXME: not needed
     ret = avcodec_parameters_to_context(codecCtx, stream->codecpar);
@@ -214,28 +216,28 @@ namespace Tonic {
     codec = avcodec_find_decoder(codecCtx->codec_id);
 
     if (avcodec_open2(codecCtx, codec, NULL) < 0) {
-      fprintf(stderr, "Failed to open decoder for stream #%u in file '%s'\n", stream_index, path.data());
+      cerr << "Failed to open decoder for stream #" << streamIndex << " in file " << path.data();
       return NULL;
     }
 
     // Setup resampling to float format
-    const int tonic_sample_rate = Tonic::sampleRate();
-    const int tonic_channel_count = numChannels;
-    const int tonic_channel_layout = getChannelLayout(numChannels);
-    const AVSampleFormat tonic_sample_fmt = AV_SAMPLE_FMT_FLT; /// TODO: or AV_SAMPLE_FMT_FLTP?
+    const int tonicSampleRate = Tonic::sampleRate();
+    const int tonicChannelCount = numChannels;
+    const int tonicChannelLayout = getChannelLayout(numChannels);
+    const AVSampleFormat tonicSampleFmt = AV_SAMPLE_FMT_FLT; /// TODO: or AVSAMPLEFMTFLTP?
 
     SwrContext* swr = swr_alloc();
-    av_opt_set_int(swr, "in_channel_count", codecCtx->channels, 0);
-    av_opt_set_int(swr, "out_channel_count", tonic_channel_count, 0);
-    av_opt_set_int(swr, "in_channel_layout", codecCtx->channel_layout, 0);
-    av_opt_set_int(swr, "out_channel_layout", tonic_channel_layout, 0);
-    av_opt_set_int(swr, "in_sample_rate", codecCtx->sample_rate, 0);
-    av_opt_set_int(swr, "out_sample_rate", tonic_sample_rate, 0);
-    av_opt_set_sample_fmt(swr, "in_sample_fmt", codecCtx->sample_fmt, 0);
-    av_opt_set_sample_fmt(swr, "out_sample_fmt", tonic_sample_fmt, 0); 
+    av_opt_set_int(swr, "inChannelCount", codecCtx->channels, 0);
+    av_opt_set_int(swr, "outChannelCount", tonicChannelCount, 0);
+    av_opt_set_int(swr, "inChannelLayout", codecCtx->channel_layout, 0);
+    av_opt_set_int(swr, "outChannelLayout", tonicChannelLayout, 0);
+    av_opt_set_int(swr, "inSampleRate", codecCtx->sample_rate, 0);
+    av_opt_set_int(swr, "outSampleRate", tonicSampleRate, 0);
+    av_opt_set_sample_fmt(swr, "inSampleFmt", codecCtx->sample_fmt, 0);
+    av_opt_set_sample_fmt(swr, "outSampleFmt", tonicSampleFmt, 0); 
     swr_init(swr);
     if (!swr_is_initialized(swr)) {
-      fprintf(stderr, "Resampler has not been properly initialized\n");
+      cerr << "Resampler has not been properly initialized" << endl;
       return NULL;
     }
 
@@ -251,7 +253,7 @@ namespace Tonic {
 
     AVFrame* frame = av_frame_alloc();
     if (!frame) {
-      fprintf(stderr, "Error allocating the frame\n");
+      cerr << "Error allocating the frame" << endl;
       return NULL;
     }
 
