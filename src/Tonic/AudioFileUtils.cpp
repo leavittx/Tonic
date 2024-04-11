@@ -111,7 +111,7 @@ namespace Tonic {
       // Erase \n on the end of the ffmpeg's error string
       auto len = strlen(buffer);
       buffer[len - 1] = '\0';
-      cerr << "FFmpeg | " << buffer;
+      cerr << "FFmpeg | " << buffer << endl;
     }
   }
 
@@ -135,8 +135,9 @@ namespace Tonic {
     // Send the packet with the compressed data to the decoder
     ret = avcodec_send_packet(decCtx, pkt);
     if (ret < 0) {
+      // Just wait for the next valid packet. https://github.com/bytedeco/javacv/issues/1679#issuecomment-892606462
       cerr << "Error submitting the packet to the decoder" << endl;
-      return -1;
+      return 0;
     }
 
     // Read all the output frames - in general there may be more than one
