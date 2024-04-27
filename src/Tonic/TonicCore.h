@@ -424,7 +424,7 @@ namespace Tonic {
         }
       }
       
-      bool operator==(const TonicSmartPointer& r){
+      bool operator==(const TonicSmartPointer& r) const {
         return obj == r.obj;
       }
     
