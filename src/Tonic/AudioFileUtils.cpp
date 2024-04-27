@@ -276,7 +276,7 @@ namespace Tonic {
         //cerr << "decoded frames: " << decodedFrames << "; decodedSamples: " << decodedSamples << endl;
       }
     }
-    cerr << "totalDecodedFrames: " << totalDecodedFrames << "; numFrames: " << numFrames; 
+    cerr << "loadAudioFile | totalDecodedFrames: " << totalDecodedFrames << "; numFrames: " << numFrames << endl; 
     // totalDecodedFrames: 661426; numFrames: 663552
     // Shrink the sample table to actual size
     if (totalDecodedFrames < numFrames) {
