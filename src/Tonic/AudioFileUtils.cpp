@@ -39,7 +39,8 @@ namespace Tonic {
         // No, format it as an integer
         sprintf(errorString, "%d", (int)error);
     }
-    cerr << "Error: %s (%s)\n", operation, errorString);
+    // TODO: optimize errorstring if it is too slow
+    cerr << "Error: " << operation << " (" << errorString << ")" << endl;
   }
   
 
@@ -50,7 +51,7 @@ namespace Tonic {
     // Get the file handle
     ExtAudioFileRef inputFile;
     CFStringRef cfStringRef; 
-    cfStringRef = CFStringCreateWithCString(kCFAllocatorDefault, path.cStr(), kCFStringEncodingMacRoman);
+    cfStringRef = CFStringCreateWithCString(kCFAllocatorDefault, path.c_str(), kCFStringEncodingMacRoman);
     CFURLRef inputFileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfStringRef, kCFURLPOSIXPathStyle, false);
     CFRelease(cfStringRef);
     
@@ -68,13 +69,13 @@ namespace Tonic {
     outputFormat.mBytesPerFrame = BYTESPERSAMPLE * numChannels;
     outputFormat.mChannelsPerFrame = numChannels;
     outputFormat.mBitsPerChannel = 32;
-    OSStatus error = ExtAudioFileSetProperty(inputFile, kExtAudioFilePropertyClientDataFormat, sizeof(AudioStreamBasicDescription), &outputFormat);
-    checkCAError(error, "Error setting kExtAudioFilePropertyClientDataFormat.");
+    OSStatus error = ExtAudioFileSetProperty(inputFile, kExtAudioFileProperty_ClientDataFormat, sizeof(AudioStreamBasicDescription), &outputFormat);
+    checkCAError(error, "Error setting kExtAudioFileProperty_ClientDataFormat.");
 
     // Determine the length of the file, in frames
     SInt64 numFrames;
     UInt32 intSize = sizeof(SInt64);
-    error = ExtAudioFileGetProperty(inputFile, kExtAudioFilePropertyFileLengthFrames, &intSize, &numFrames);
+    error = ExtAudioFileGetProperty(inputFile, kExtAudioFileProperty_FileLengthFrames, &intSize, &numFrames);
     checkCAError(error, "Error reading number of frames.");
     
     // change sampleTable numframes to long long
