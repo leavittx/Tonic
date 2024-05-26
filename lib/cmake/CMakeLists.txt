@@ -4,6 +4,7 @@ project(Tonic)
 message(${CMAKE_CURRENT_SOURCE_DIR})
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic SRC_LIST)
 add_library(TonicLib ${SRC_LIST})
+target_include_directories(TonicLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic")
 
 add_definitions(-w)
 
@@ -11,7 +12,7 @@ if(POLICY CMP0074)
     #policy for <PackageName>_ROOT variables
     cmake_policy(SET CMP0074 NEW)
 endif()
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 find_package(FFMPEG COMPONENTS avcodec avformat avutil swresample)
 message(${FFMPEG_avcodec_INCLUDE_DIRS})
 message(${FFMPEG_avcodec_LIBRARIES})

@@ -24,7 +24,7 @@ extern "C"
 namespace Tonic {
 
 
-#ifdef __APPLE__
+#if 0
 
   void checkCAError(OSStatus error, const char *operation){
     if (error == noErr) return;
@@ -127,6 +127,22 @@ namespace Tonic {
       return -1;
     }
   }
+
+#ifndef FF_API_OLD_CHANNEL_LAYOUT
+  const AVChannelLayout* getChannelLayout2(unsigned numChannels)
+  {
+    constexpr AVChannelLayout layouts[] = {
+      AV_CHANNEL_LAYOUT_MONO,
+      AV_CHANNEL_LAYOUT_STEREO
+    };
+    if (numChannels > sizeof(layouts) / sizeof(AVChannelLayout))
+    {
+      cerr << numChannels << " not supported" << endl;
+      numChannels = 1;
+    }
+    return &layouts[numChannels - 1];
+  }
+#endif
 
   int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, int channels, TonicFloat* decodeBuffer) {
     int i, ch;
@@ -232,6 +248,7 @@ namespace Tonic {
     const int resampleChannelLayout = getChannelLayout(numChannels);
     const AVSampleFormat resampleSampleFmt = AV_SAMPLE_FMT_FLT;
 
+#if FF_API_OLD_CHANNEL_LAYOUT
     SwrContext* swr = swr_alloc();
     av_opt_set_int(swr, "in_channel_count", codecCtx->channels, 0);
     av_opt_set_int(swr, "out_channel_count", resampleChannelCount, 0);
@@ -240,7 +257,17 @@ namespace Tonic {
     av_opt_set_int(swr, "in_sample_rate", codecCtx->sample_rate, 0);
     av_opt_set_int(swr, "out_sample_rate", resampleSampleRate, 0);
     av_opt_set_sample_fmt(swr, "in_sample_fmt", codecCtx->sample_fmt, 0);
-    av_opt_set_sample_fmt(swr, "out_sample_fmt", resampleSampleFmt, 0); 
+    av_opt_set_sample_fmt(swr, "out_sample_fmt", resampleSampleFmt, 0);
+#else
+    SwrContext* swr = nullptr;
+    if (swr_alloc_set_opts2(&swr, getChannelLayout2(numChannels), resampleSampleFmt, 
+                        resampleSampleRate, &codecCtx->ch_layout,
+                        codecCtx->sample_fmt, codecCtx->sample_rate, 0, nullptr))
+    {
+        cerr << "Failed to alloc and setup resampler" << endl;
+        return NULL;
+    }
+#endif                   
     swr_init(swr);
     if (!swr_is_initialized(swr)) {
       cerr << "Resampler has not been properly initialized" << endl;
