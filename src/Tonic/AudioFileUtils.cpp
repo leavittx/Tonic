@@ -128,6 +128,7 @@ namespace Tonic {
     }
   }
 
+#ifndef FF_API_OLD_CHANNEL_LAYOUT
   const AVChannelLayout* getChannelLayout2(unsigned numChannels)
   {
     constexpr AVChannelLayout layouts[] = {
@@ -141,6 +142,7 @@ namespace Tonic {
     }
     return &layouts[numChannels - 1];
   }
+#endif
 
   int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, int channels, TonicFloat* decodeBuffer) {
     int i, ch;
@@ -246,6 +248,17 @@ namespace Tonic {
     const int resampleChannelLayout = getChannelLayout(numChannels);
     const AVSampleFormat resampleSampleFmt = AV_SAMPLE_FMT_FLT;
 
+#if FF_API_OLD_CHANNEL_LAYOUT
+    SwrContext* swr = swr_alloc();
+    av_opt_set_int(swr, "in_channel_count", codecCtx->channels, 0);
+    av_opt_set_int(swr, "out_channel_count", resampleChannelCount, 0);
+    av_opt_set_int(swr, "in_channel_layout", codecCtx->channel_layout, 0);
+    av_opt_set_int(swr, "out_channel_layout", resampleChannelLayout, 0);
+    av_opt_set_int(swr, "in_sample_rate", codecCtx->sample_rate, 0);
+    av_opt_set_int(swr, "out_sample_rate", resampleSampleRate, 0);
+    av_opt_set_sample_fmt(swr, "in_sample_fmt", codecCtx->sample_fmt, 0);
+    av_opt_set_sample_fmt(swr, "out_sample_fmt", resampleSampleFmt, 0);
+#else
     SwrContext* swr = nullptr;
 
     AVChannelLayout testMono = AV_CHANNEL_LAYOUT_MONO;
@@ -255,10 +268,10 @@ namespace Tonic {
                         resampleSampleRate, &codecCtx->ch_layout,
                         codecCtx->sample_fmt, codecCtx->sample_rate, 0, nullptr))
     {
-        cerr << "Resampler setup was screwed" << endl;
+        cerr << "Failed to alloc and setup resampler" << endl;
         return NULL;
     }
-                        
+#endif                   
     swr_init(swr);
     if (!swr_is_initialized(swr)) {
       cerr << "Resampler has not been properly initialized" << endl;
