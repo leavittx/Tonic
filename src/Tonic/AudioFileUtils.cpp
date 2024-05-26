@@ -260,10 +260,6 @@ namespace Tonic {
     av_opt_set_sample_fmt(swr, "out_sample_fmt", resampleSampleFmt, 0);
 #else
     SwrContext* swr = nullptr;
-
-    AVChannelLayout testMono = AV_CHANNEL_LAYOUT_MONO;
-    AVChannelLayout testStereo =  AV_CHANNEL_LAYOUT_STEREO;
-
     if (swr_alloc_set_opts2(&swr, getChannelLayout2(numChannels), resampleSampleFmt, 
                         resampleSampleRate, &codecCtx->ch_layout,
                         codecCtx->sample_fmt, codecCtx->sample_rate, 0, nullptr))
