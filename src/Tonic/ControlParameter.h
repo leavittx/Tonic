@@ -42,6 +42,7 @@ namespace Tonic {
       ControlParameterType  type_;
       
       bool                isLogarithmic_;
+      bool                isDb_;
       
     public:
       
@@ -64,6 +65,9 @@ namespace Tonic {
       
       void        setIsLogarithmic(bool isLogarithmic) { isLogarithmic_ = isLogarithmic; };
       bool        getIsLogarithmic() { return isLogarithmic_; };
+
+      bool              getIsDb() { return isDb_; }
+      void              setIsDb(bool isDb) { isDb_ = isDb; }
     
       void        setNormalizedValue(TonicFloat normVal);
       TonicFloat  getNormalizedValue();
@@ -78,7 +82,7 @@ namespace Tonic {
         
     string              getName();
     ControlParameter &  name(string name);
-    
+
     string              getDisplayName();
     ControlParameter &  displayName(string displayName);
     
@@ -96,6 +100,9 @@ namespace Tonic {
     
     bool                getIsLogarithmic();
     ControlParameter &  logarithmic(bool isLogarithmic);
+
+    bool                getIsDb();
+    ControlParameter &  db(bool isDb);
     
     // Convenience methods for setting/getting value normalized linearly 0-1,
     // mapped to min/max range, with log applied if necessary

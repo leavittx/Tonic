@@ -15,7 +15,8 @@ namespace Tonic { namespace Tonic_{
     min_(0),
     max_(1),
     type_(ControlParameterTypeContinuous),
-    isLogarithmic_(false)
+    isLogarithmic_(false),
+    isDb_(false)
   {
     
   }
@@ -25,7 +26,12 @@ namespace Tonic { namespace Tonic_{
       setValue(mapLinToLog(normVal, min_, max_));
     }
     else{
-      setValue(map(normVal, 0.f, 1.f, min_, max_, true));
+      if (isDb_) {
+        setValue(dBToLin(map(normVal, 0.f, 1.f, min_, max_, true)));
+      } 
+      else{
+        setValue(map(normVal, 0.f, 1.f, min_, max_, true));
+      }
     }
   }
   
@@ -34,7 +40,12 @@ namespace Tonic { namespace Tonic_{
       return mapLogToLin(value_, min_, max_);
     }
     else{
-      return map(value_, min_, max_, 0.f, 1.f, true);
+      if (isDb_) {
+        return map(linTodB(value_), min_, max_, 0.f, 1.f, true);
+      }
+      else {
+        return map(value_, min_, max_, 0.f, 1.f, true);
+      }
     }
   }
   
@@ -45,21 +56,21 @@ namespace Tonic { namespace Tonic_{
   string ControlParameter::getName(){
     return gen()->getName();
   }
-  
+
   ControlParameter &  ControlParameter::name(string name){
     gen()->setName(name);
     return *this;
   }
-  
+
   string ControlParameter::getDisplayName(){
     return gen()->getDisplayName();
   }
-  
+
   ControlParameter &  ControlParameter::displayName(string displayName){
     gen()->setDisplayName(displayName);
     return *this;
   }
-  
+
   TonicFloat ControlParameter::getValue(){
     return gen()->getValue();
   }
@@ -103,6 +114,15 @@ namespace Tonic { namespace Tonic_{
   
   bool ControlParameter::getIsLogarithmic(){
     return gen()->getIsLogarithmic();
+  }
+
+  ControlParameter& ControlParameter::db(bool isDb) {
+    gen()->setIsDb(isDb);
+    return *this;
+  }
+
+  bool ControlParameter::getIsDb() {
+    return gen()->getIsDb();
   }
   
   ControlParameter & ControlParameter::setNormalizedValue(TonicFloat value){
