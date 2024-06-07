@@ -34,6 +34,7 @@
 #include "Tonic/RampedValue.h"
 #include "Tonic/Synth.h"
 #include "Tonic/Mixer.h"
+#include "Tonic/GranularSynth.h"
 
 // -------- Generators ---------
 
