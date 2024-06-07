@@ -13,35 +13,9 @@
 namespace Tonic {
   namespace Tonic_ {
 
-
     GranularSynth_::GranularSynth_() {
-      int N = 5;
-      //float duration = 100;
-      //float ramp = 100;
-      //float offset = 30;
-      //float delay = 100;
-      //float stretch = 15.0f;
-      //float random = 1.0f;
-
       stk::Stk::setSampleRate(Tonic::sampleRate());
-      
-      //grani_.setRandomFactor(random);
-      //grani_.setStretch(stretch);
-      //grani_.setGrainParameters(duration, ramp, offset, delay);
-
-      try {
-        grani_.openFile("C:\\Users\\lev\\Documents\\Audacity\\SoundTest.wav");
-        //mGrani.openFile("C:\\Users\\lev\\Documents\\Audacity\\Mark12.wav");
-      }
-      catch (stk::StkError&) {
-        cerr << "error" << endl;
-      }
-      grani_.setVoices(N);
-
-      if (grani_.channelsOut() != 2) {
-        cerr << "channels: " << grani_.channelsOut() << endl;
-      }
-
+      // TODO: set depending on file
       setIsStereoOutput(true);
     }
 
@@ -69,6 +43,25 @@ namespace Tonic {
       delay_ = delay;
     }
 
+    void  GranularSynth_::setVoices(ControlGenerator voices) {
+      voices_ = voices;
+    }
+
+    void  GranularSynth_::setFilePath(const std::string& path, bool typeRaw) {
+      if (filePathCurrent_ != path) {
+        try {
+          grani_.openFile(path, typeRaw);
+        }
+        catch (stk::StkError&) {
+          cerr << "error" << endl;
+        }
+        filePathCurrent_ = path;
+
+        if (grani_.channelsOut() != 2) {
+          cerr << "channels: " << grani_.channelsOut() << endl;
+        }
+      }
+    }
 
     void   GranularSynth_::computeSynthesisBlock(const SynthesisContext_& context) {
       unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
@@ -81,11 +74,15 @@ namespace Tonic {
       float rampValue = clamp(ramp_.tick(context).value, 0, 100);
       float offsetValue = offset_.tick(context).value;
       float delayValue = delay_.tick(context).value;
+      int voicesValue = static_cast<int>(std::round(clamp(voices_.tick(context).value, 0, 50)));
 
       grani_.setRandomFactor(randomFactorValue);
       grani_.setStretch(stretchValue);
       grani_.setGrainParameters(durationValue, rampValue, offsetValue, delayValue);
-      //grani_.setVoices();
+      if (voicesCurrent_ != voicesValue) {
+        grani_.setVoices(voicesValue);
+        voicesCurrent_ = voicesValue;
+      }
 
       for (unsigned int i = 0; i < bufferFrames; i++) {
         grani_.tick();

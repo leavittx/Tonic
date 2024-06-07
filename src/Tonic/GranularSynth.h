@@ -33,6 +33,9 @@ namespace Tonic {
       ControlGenerator     ramp_;
       ControlGenerator     offset_;
       ControlGenerator     delay_;
+      ControlGenerator     voices_;
+      int                  voicesCurrent_ = -1;
+      std::string          filePathCurrent_;
 
     public:
       void setRandomFactor(ControlGenerator randomFactor);
@@ -41,6 +44,8 @@ namespace Tonic {
       void setRamp(ControlGenerator ramp);
       void setOffset(ControlGenerator offset);
       void setDelay(ControlGenerator delay);
+      void setVoices(ControlGenerator voices);
+      void setFilePath(const std::string& path, bool typeRaw);
       GranularSynth_();
     };
   }
@@ -53,6 +58,10 @@ namespace Tonic {
     TONIC_MAKE_CTRL_GEN_SETTERS(GranularSynth, ramp, setRamp);
     TONIC_MAKE_CTRL_GEN_SETTERS(GranularSynth, offset, setOffset);
     TONIC_MAKE_CTRL_GEN_SETTERS(GranularSynth, delay, setDelay);
+    TONIC_MAKE_CTRL_GEN_SETTERS(GranularSynth, voices, setVoices);
+    void setFilePath(const std::string& path, bool typeRaw = false) {
+      this->gen()->setFilePath(path, typeRaw);
+    }
   };
 
 
