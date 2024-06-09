@@ -41,6 +41,7 @@
 #include "Tonic/stk_BlowBotl.h"
 #include "Tonic/stk_Clarinet.h"
 #include "Tonic/stk_Wurley.h"
+#include "Tonic/stk_FreeVerb.h"
 
 // -------- Generators ---------
 
