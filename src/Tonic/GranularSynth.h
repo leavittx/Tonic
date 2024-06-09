@@ -2,7 +2,6 @@
 //  GranularSynth.h
 //  TonicDemo
 //
-//  Created by Morgan Packard on 1/29/13.
 
 //
 // See LICENSE.txt for license and usage information.

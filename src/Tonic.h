@@ -35,6 +35,12 @@
 #include "Tonic/Synth.h"
 #include "Tonic/Mixer.h"
 #include "Tonic/GranularSynth.h"
+#include "Tonic/stk_Modulate.h"
+#include "Tonic/stk_Moog.h"
+#include "Tonic/stk_Rhodey.h"
+#include "Tonic/stk_BlowBotl.h"
+#include "Tonic/stk_Clarinet.h"
+#include "Tonic/stk_Wurley.h"
 
 // -------- Generators ---------
 

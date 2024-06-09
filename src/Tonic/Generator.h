@@ -77,6 +77,17 @@ namespace Tonic {
     }
 
   };
+
+  class Instrument : public Generator {
+
+  public:
+
+    Instrument(Tonic_::Generator_* gen = new Tonic_::Generator_) : Generator(gen) {}
+
+    virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) = 0;
+    virtual void noteOff(TonicFloat amplitude) = 0;
+
+  };
   
   template<class GenType>
   class TemplatedGenerator : public Generator{
@@ -86,6 +97,16 @@ namespace Tonic {
     }
   public:
     TemplatedGenerator() : Generator(new GenType) {}
+  };
+
+  template<class GenType>
+  class TemplatedInstrument : public Instrument {
+  protected:
+    GenType* gen() {
+      return static_cast<GenType*>(obj);
+    }
+  public:
+    TemplatedInstrument() : Instrument(new GenType) {}
   };
   
 }
