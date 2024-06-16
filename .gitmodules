@@ -1,0 +1,3 @@
+[submodule "submodules/stk"]
+	path = submodules/stk
+	url = https://github.com/thestk/stk.git
