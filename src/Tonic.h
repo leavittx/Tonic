@@ -34,6 +34,9 @@
 #include "Tonic/RampedValue.h"
 #include "Tonic/Synth.h"
 #include "Tonic/Mixer.h"
+#include "Tonic/PolySynth.h"
+
+// -------- STK instruments & effects ---------
 #include "Tonic/GranularSynth.h"
 #include "Tonic/stk_Modulate.h"
 #include "Tonic/stk_Moog.h"
@@ -42,6 +45,7 @@
 #include "Tonic/stk_Clarinet.h"
 #include "Tonic/stk_Wurley.h"
 #include "Tonic/stk_FreeVerb.h"
+#include "Tonic/stk_Drummer.h"
 
 // -------- Generators ---------
 
