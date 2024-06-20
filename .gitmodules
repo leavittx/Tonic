@@ -1,3 +1,4 @@
 [submodule "submodules/stk"]
 	path = submodules/stk
 	url = git@github.com:leavittx/stk.git
+	branch = tonic
