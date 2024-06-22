@@ -40,11 +40,13 @@ if(REALTIME)
         endif()
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
         #==============    MAC OS    ================#
-        message("Machintosh DETECTED!")
-        find_package(CoreAudio REQUIRED)
+        message("Macintosh DETECTED!")
+        find_library(COREAUDIO_LIB CoreAudio)
+        find_library(COREFOUNDATION_LIB CoreFoundation)
+        #find_package(CoreAudio REQUIRED)
         include_directories(${COREAUDIO_INCLUDE_DIRS})
         add_definitions(-D__MACOSX_CORE__)
-        link_libraries(${COREAUDIO_LIBRARY} ${COREAUDIO_FOUNDATION} ${COREAUDIO_MIDI})
+        link_libraries(${COREAUDIO_LIB} ${COREAUDIO_FOUNDATION_LIB})
     elseif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
         # TODO: MORE SUPPORT (e.g., MSYS)?
         # Tested under MSYS2 with Mingw64 toolchain
@@ -92,8 +94,9 @@ message(${CMAKE_CURRENT_SOURCE_DIR})
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic SRC_LIST)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/src STK_SRC_LIST)
 add_library(TonicLib ${SRC_LIST} ${STK_SRC_LIST})
+target_include_directories(TonicLib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/include")
 target_include_directories(TonicLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic")
-target_include_directories(TonicLib PRIVATE "${CMAKE_SOURCE_DIR}/../../submodules/stk/include")
+
 
 
 if(POLICY CMP0074)
