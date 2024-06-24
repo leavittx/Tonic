@@ -6,28 +6,31 @@
 //
 //
 
-#include "PolySynth.h"
+#include "PolySynth2.h"
 
-#include <array>
-
-void BasicPolyphonicAllocator::addVoice(Synth synth)
+void BasicPolyphonicAllocator2::addVoice(Generator gen, Synth synth, int instanceIdx)
 {
   PolyVoice v;
+  v.instanceIdx = instanceIdx;
+  v.gen = gen;
   v.synth = synth;
   v.currentNote = 0;
 
+  auto paramPrefix = std::to_string(instanceIdx) + "_";
   auto params = synth.getParameters();
   for (auto& param : params)
   {
     size_t paramIdx = 0;
-    if (param.getName() == "freq")
+    if (param.getName().find(paramPrefix + "freq") != string::npos)
       paramIdx = 0;
-    else if (param.getName() == "polyGate")
+    else if (param.getName().find(paramPrefix + "polyGate") != string::npos)
       paramIdx = 1;
-    else if (param.getName() == "polyVelocity")
+    else if (param.getName().find(paramPrefix + "polyVelocity") != string::npos)
       paramIdx = 2;
-    else if (param.getName() == "polyVoiceNumber")
+    else if (param.getName().find(paramPrefix + "polyVoiceNumber") != string::npos)
       paramIdx = 3;
+    else
+      continue;
 
     voiceIdxToParams[voiceData.size()][paramIdx] = param;
   }
@@ -36,7 +39,7 @@ void BasicPolyphonicAllocator::addVoice(Synth synth)
   voiceData.push_back(v);
 }
 
-void BasicPolyphonicAllocator::noteOn(int note, int velocity)
+void BasicPolyphonicAllocator2::noteOn(int note, int velocity)
 {
   int voiceNumber = getNextVoice(note);
 
@@ -47,15 +50,24 @@ void BasicPolyphonicAllocator::noteOn(int note, int velocity)
 
   PolyVoice& voice = voiceData[voiceNumber];
 
-  //// TODO: set frequency
-  //voice.synth.setParameter("freq", mtof(note));
-  //voice.synth.setParameter("polyGate", 1.0);
-  //voice.synth.setParameter("polyVelocity", velocity);
-  //voice.synth.setParameter("polyVoiceNumber", voiceNumber);
-  voiceIdxToParams[voiceNumber][0].value(mtof(note));
-  voiceIdxToParams[voiceNumber][1].value(1.0);
-  voiceIdxToParams[voiceNumber][2].value(velocity);
-  voiceIdxToParams[voiceNumber][3].value(voiceNumber);
+  if (voice.gen.isInstrument())
+  {
+    voice.gen.noteOn(mtof(note), velocity);
+  }
+  else
+  {
+    //voice.synth.setParameter("freq", mtof(note));
+    //voice.synth.setParameter("polyGate", 1.0);
+    //voice.synth.setParameter("polyVelocity", velocity);
+    //voice.synth.setParameter("polyVoiceNumber", voiceNumber);
+
+    cerr << "Param name: " << voiceIdxToParams[voiceNumber][0].getName() << endl;
+
+    voiceIdxToParams[voiceNumber][0].value(mtof(note));
+    voiceIdxToParams[voiceNumber][1].value(1.0);
+    voiceIdxToParams[voiceNumber][2].value(velocity);
+    voiceIdxToParams[voiceNumber][3].value(voiceNumber);
+  }
 
   voice.currentNote = note;
 
@@ -66,7 +78,7 @@ void BasicPolyphonicAllocator::noteOn(int note, int velocity)
   cerr << "Active voices: " << activeVoiceQueue.size() << endl;
 }
 
-void BasicPolyphonicAllocator::noteOff(int note)
+void BasicPolyphonicAllocator2::noteOff(int note)
 {
   // clear the oldest active voice with this note number
   for (int voiceNumber : activeVoiceQueue)
@@ -76,7 +88,15 @@ void BasicPolyphonicAllocator::noteOff(int note)
     {
       cout << ">> " << "Stopping note " << note << " on voice " << voiceNumber << "\n";
 
-      voice.synth.setParameter("polyGate", 0.0);
+      if (voice.gen.isInstrument())
+      {
+        voice.gen.noteOff(1.0);
+      }
+      else
+      {
+        //voice.synth.setParameter("polyGate", 0.0);
+        voiceIdxToParams[voiceNumber][1].value(0.0);
+      }
 
       activeVoiceQueue.remove(voiceNumber);
       inactiveVoiceQueue.remove(voiceNumber);
@@ -87,7 +107,7 @@ void BasicPolyphonicAllocator::noteOff(int note)
   }
 }
 
-int BasicPolyphonicAllocator::getNextVoice(int note)
+int BasicPolyphonicAllocator2::getNextVoice(int note)
 {
   // Find a voice not playing any note
   if (inactiveVoiceQueue.size())
@@ -98,9 +118,9 @@ int BasicPolyphonicAllocator::getNextVoice(int note)
   return -1;
 }
 
-int OldestNoteStealingPolyphonicAllocator::getNextVoice(int note)
+int OldestNoteStealingPolyphonicAllocator2::getNextVoice(int note)
 {
-  int voice = BasicPolyphonicAllocator::getNextVoice(note);
+  int voice = BasicPolyphonicAllocator2::getNextVoice(note);
   if (voice >= 0)
     return voice;
 
@@ -112,15 +132,9 @@ int OldestNoteStealingPolyphonicAllocator::getNextVoice(int note)
   return -1;
 }
 
-int SequentialPolyphonicAllocator::getNextVoice(int note)
+int LowestNoteStealingPolyphonicAllocator2::getNextVoice(int note)
 {
-  lastVoiceIdx = (lastVoiceIdx + 1) % voiceData.size();
-  return lastVoiceIdx;
-}
-
-int LowestNoteStealingPolyphonicAllocator::getNextVoice(int note)
-{
-  int voice = BasicPolyphonicAllocator::getNextVoice(note);
+  int voice = BasicPolyphonicAllocator2::getNextVoice(note);
   if (voice >= 0)
     return voice;
 

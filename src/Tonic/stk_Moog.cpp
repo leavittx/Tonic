@@ -35,28 +35,28 @@ namespace Tonic {
     }
 
     void  Moog_::noteOn(TonicFloat frequency, TonicFloat amplitude) {
-      rhodey_.noteOn(frequency, amplitude);
+      moog_.noteOn(frequency, amplitude);
     }
 
     void  Moog_::noteOff(TonicFloat amplitude) {
-      rhodey_.noteOff(amplitude);
+      moog_.noteOff(amplitude);
     }
 
     void  Moog_::computeSynthesisBlock(const SynthesisContext_& context) {
       unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
       stk::StkFloat* samples = (stk::StkFloat*)&outputFrames_[0];
-      const stk::StkFrames& lastframe = rhodey_.lastFrame();
+      const stk::StkFrames& lastframe = moog_.lastFrame();
 
       float frequencyValue = frequency_.tick(context).value;
       float modulationSpeedValue = modulationSpeed_.tick(context).value;
       float modulationDepthValue = modulationDepth_.tick(context).value;
      
-      rhodey_.setFrequency(frequencyValue);
-      rhodey_.setModulationSpeed(modulationSpeedValue);
-      rhodey_.setModulationDepth(modulationDepthValue);
+      //moog_.setFrequency(frequencyValue);
+      moog_.setModulationSpeed(modulationSpeedValue);
+      moog_.setModulationDepth(modulationDepthValue);
 
       for (unsigned int i = 0; i < bufferFrames; i++) {
-        rhodey_.tick();
+        moog_.tick();
         for (int j = 0; j < lastframe.channels(); j++)
           *samples++ = lastframe[j];
       }

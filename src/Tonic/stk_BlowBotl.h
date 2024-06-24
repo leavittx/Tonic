@@ -18,7 +18,7 @@ namespace Tonic {
 
   namespace Tonic_ {
 
-    class BlowBotl_ : public Generator_ {
+    class BlowBotl_ : public Instrument_ {
 
     protected:
       stk::BlowBotl blowBotl_;
@@ -30,8 +30,8 @@ namespace Tonic {
 
     public:
       void setFrequency(ControlGenerator controlGenerator);
-      void noteOn(TonicFloat frequency, TonicFloat amplitude);
-      void noteOff(TonicFloat amplitude);
+      void noteOn(TonicFloat frequency, TonicFloat amplitude) override;
+      void noteOff(TonicFloat amplitude) override;
       BlowBotl_();
     };
   }

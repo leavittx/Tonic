@@ -36,7 +36,7 @@ namespace Tonic {
       const stk::StkFrames& lastframe = rhodey_.lastFrame();
 
       float frequencyValue = frequency_.tick(context).value;
-      rhodey_.setFrequency(frequencyValue);
+      //rhodey_.setFrequency(frequencyValue);
     
       for (unsigned int i = 0; i < bufferFrames; i++) {
         rhodey_.tick();

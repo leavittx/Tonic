@@ -18,7 +18,7 @@ namespace Tonic {
 
   namespace Tonic_ {
 
-    class Drummer_ : public Generator_ {
+    class Drummer_ : public Instrument_ {
 
     protected:
       stk::Drummer drummer_;
@@ -30,8 +30,8 @@ namespace Tonic {
 
     public:
       void setFrequency(ControlGenerator controlGenerator);
-      void noteOn(TonicFloat frequency, TonicFloat amplitude);
-      void noteOff(TonicFloat amplitude);
+      void noteOn(TonicFloat frequency, TonicFloat amplitude) override;
+      void noteOff(TonicFloat amplitude) override;
       Drummer_();
     };
   }

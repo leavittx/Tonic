@@ -35,6 +35,7 @@
 #include "Tonic/Synth.h"
 #include "Tonic/Mixer.h"
 #include "Tonic/PolySynth.h"
+#include "Tonic/PolySynth2.h"
 
 // -------- STK instruments & effects ---------
 #include "Tonic/GranularSynth.h"

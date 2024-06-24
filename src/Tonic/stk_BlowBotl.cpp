@@ -36,7 +36,7 @@ namespace Tonic {
       const stk::StkFrames& lastframe = blowBotl_.lastFrame();
 
       float frequencyValue = frequency_.tick(context).value;
-      blowBotl_.setFrequency(frequencyValue);
+      //blowBotl_.setFrequency(frequencyValue);
     
       for (unsigned int i = 0; i < bufferFrames; i++) {
         blowBotl_.tick();

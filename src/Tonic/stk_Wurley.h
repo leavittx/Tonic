@@ -18,7 +18,7 @@ namespace Tonic {
 
   namespace Tonic_ {
 
-    class Wurley_ : public Generator_ {
+    class Wurley_ : public Instrument_ {
 
     protected:
       stk::Wurley wurley_;
@@ -30,8 +30,8 @@ namespace Tonic {
 
     public:
       void setFrequency(ControlGenerator controlGenerator);
-      void noteOn(TonicFloat frequency, TonicFloat amplitude);
-      void noteOff(TonicFloat amplitude);
+      void noteOn(TonicFloat frequency, TonicFloat amplitude) override;
+      void noteOff(TonicFloat amplitude) override;
       Wurley_();
     };
   }

@@ -18,10 +18,10 @@ namespace Tonic {
 
   namespace Tonic_ {
 
-    class Moog_ : public Generator_ {
+    class Moog_ : public Instrument_ {
 
     protected:
-      stk::Moog rhodey_;
+      stk::Moog moog_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
 
@@ -36,8 +36,8 @@ namespace Tonic {
       void setModulationSpeed(ControlGenerator controlGenerator);
       void setModulationDepth(ControlGenerator controlGenerator);
       void setRandomGain(ControlGenerator controlGenerator);
-      void noteOn(TonicFloat frequency, TonicFloat amplitude);
-      void noteOff(TonicFloat amplitude);
+      void noteOn(TonicFloat frequency, TonicFloat amplitude) override;
+      void noteOff(TonicFloat amplitude) override;
       /// TODO: controlChange
       Moog_();
     };
