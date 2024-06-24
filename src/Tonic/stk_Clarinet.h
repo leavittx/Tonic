@@ -18,7 +18,7 @@ namespace Tonic {
 
   namespace Tonic_ {
 
-    class Clarinet_ : public Generator_ {
+    class Clarinet_ : public Instrument_ {
 
     protected:
       stk::Clarinet clarinet_;
@@ -30,8 +30,8 @@ namespace Tonic {
 
     public:
       void setFrequency(ControlGenerator controlGenerator);
-      void noteOn(TonicFloat frequency, TonicFloat amplitude);
-      void noteOff(TonicFloat amplitude);
+      void noteOn(TonicFloat frequency, TonicFloat amplitude) override;
+      void noteOff(TonicFloat amplitude) override;
       Clarinet_();
     };
   }

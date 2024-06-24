@@ -7,30 +7,31 @@
 //
 
 #include <list>
+#include <array>
 
 #include "TonicCore.h"
+#include "Generator.h"
 #include "Synth.h"
-#include "Mixer.h"
+#include "Arithmetic.h"
 
 
 using namespace Tonic;
 
 template<typename VoiceAllocator>
-class PolySynthWithAllocator : public Synth
+class PolySynthWithAllocator2 : public Adder
 {
 public:
-	PolySynthWithAllocator() : Synth()
+	PolySynthWithAllocator2() : Adder()
 	{
-		setOutputGen(mixer);
 	}
 
-	void addVoice(Synth synth)
+	void addVoice(Generator gen, Synth synth, int instanceIdx)
 	{
-		allocator.addVoice(synth);
-		mixer.addInput(synth);
+		allocator.addVoice(gen, synth, instanceIdx);
+		Adder::input(gen);
 	}
 
-	typedef Synth(VoiceCreateFn)();
+	typedef Generator(VoiceCreateFn)();
 	void addVoices(VoiceCreateFn createFn, int count)
 	{
 		for (int i = 0; i < count; i++)
@@ -48,21 +49,22 @@ public:
 	}
 
 protected:
-	Mixer mixer;
 	VoiceAllocator allocator;
 };
 
-class BasicPolyphonicAllocator
+class BasicPolyphonicAllocator2
 {
 public:
 	class PolyVoice
 	{
 	public:
+    int instanceIdx;
 		int currentNote;
-		Synth synth;
+		Generator gen;
+    Synth synth;
 	};
 
-	void addVoice(Synth synth);
+	void addVoice(Generator gen, Synth synth, int instanceIdx);
 	void noteOn(int noteNumber, int velocity);
 	void noteOff(int noteNumber);
 
@@ -71,27 +73,20 @@ protected:
 	vector<PolyVoice> voiceData;
 	list<int> inactiveVoiceQueue;
 	list<int> activeVoiceQueue;
-  int lastVoiceIdx{ -1 };
   std::map<int, std::array<ControlParameter, 4>> voiceIdxToParams;
 };
 
-class OldestNoteStealingPolyphonicAllocator : public BasicPolyphonicAllocator
+class OldestNoteStealingPolyphonicAllocator2 : public BasicPolyphonicAllocator2
 {
 protected:
 	virtual int getNextVoice(int note);
 };
 
-class SequentialPolyphonicAllocator : public BasicPolyphonicAllocator
-{
-protected:
-  virtual int getNextVoice(int note);
-};
-
-class LowestNoteStealingPolyphonicAllocator : public BasicPolyphonicAllocator
+class LowestNoteStealingPolyphonicAllocator2 : public BasicPolyphonicAllocator2
 {
 protected:
 	virtual int getNextVoice(int note);
 };
 
-typedef PolySynthWithAllocator<LowestNoteStealingPolyphonicAllocator> PolySynth;
+typedef PolySynthWithAllocator2<LowestNoteStealingPolyphonicAllocator2> PolySynth2;
 

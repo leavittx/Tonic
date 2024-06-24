@@ -36,7 +36,7 @@ namespace Tonic {
       const stk::StkFrames& lastframe = clarinet_.lastFrame();
 
       float frequencyValue = frequency_.tick(context).value;
-      clarinet_.setFrequency(frequencyValue);
+      //clarinet_.setFrequency(frequencyValue);
     
       for (unsigned int i = 0; i < bufferFrames; i++) {
         clarinet_.tick();

@@ -32,6 +32,10 @@ namespace Tonic {
       // set stereo/mono - changes number of channels in outputFrames_
       // subclasses should call in constructor to determine channel output
       virtual void setIsStereoOutput( bool stereo );
+
+      virtual bool isInstrument() const { return false; }
+      virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) {}
+      virtual void noteOff(TonicFloat amplitude) {}
       
     protected:
       
@@ -59,6 +63,14 @@ namespace Tonic {
       
     }
 
+    class Instrument_ : public Generator_ {
+    public:
+      //virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) {}
+      //virtual void noteOff(TonicFloat amplitude) {}
+
+      virtual bool isInstrument() const override { return true; }
+    };
+
   }
 
   
@@ -76,6 +88,10 @@ namespace Tonic {
       obj->tick(frames, context);
     }
 
+    virtual bool isInstrument() const { return obj->isInstrument(); }
+    virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) { obj->noteOn(frequency, amplitude); }
+    virtual void noteOff(TonicFloat amplitude) { obj->noteOff(amplitude); }
+
   };
 
   class Instrument : public Generator {
@@ -84,8 +100,9 @@ namespace Tonic {
 
     Instrument(Tonic_::Generator_* gen = new Tonic_::Generator_) : Generator(gen) {}
 
-    virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) = 0;
-    virtual void noteOff(TonicFloat amplitude) = 0;
+    bool isInstrument() const override { return true; }
+    //virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) = 0;
+    //virtual void noteOff(TonicFloat amplitude) = 0;
 
   };
   
