@@ -123,7 +123,7 @@ namespace Tonic {
     case 2:
       return AV_CH_LAYOUT_STEREO;
     default:
-      cerr << numChannels << " channels not supported";
+      cerr << numChannels << " channels not supported" << endl;
       return -1;
     }
   }
@@ -187,7 +187,7 @@ namespace Tonic {
     }
   }
   
-  SampleTable loadAudioFile(string path, int numChannels) {
+  std::unique_ptr<SampleTable> loadAudioFile(string path, int numChannels) {
     const AVCodec* codec;
     AVCodecContext* codecCtx = NULL;
     int ret;
@@ -200,11 +200,11 @@ namespace Tonic {
     // Get format from audio file
     AVFormatContext* format = avformat_alloc_context();
     if (avformat_open_input(&format, path.data(), NULL, NULL) != 0) {
-      cerr << "Could not open file " << path.data();
+      cerr << "Could not open file " << path.data() << endl;
       return NULL;
     }
     if (avformat_find_stream_info(format, NULL) < 0) {
-      cerr << "Could not retrieve stream info from file " << path.data();
+      cerr << "Could not retrieve stream info from file " << path.data() << endl;
       return NULL;
     }
 
@@ -217,7 +217,7 @@ namespace Tonic {
       }
     }
     if (streamIndex == -1) {
-      cerr << "Could not retrieve audio stream from file " << path.data();
+      cerr << "Could not retrieve audio stream from file " << path.data() << endl;
       return NULL;
     }
     AVStream* stream = format->streams[streamIndex];
@@ -225,7 +225,7 @@ namespace Tonic {
     // find & open codec
     codecCtx = avcodec_alloc_context3(nullptr);
     if (!codecCtx) {
-      cerr << "Unable to allocate memory for codec context";
+      cerr << "Unable to allocate memory for codec context" << endl;
       return NULL;
     }
 
@@ -238,7 +238,7 @@ namespace Tonic {
     codec = avcodec_find_decoder(codecCtx->codec_id);
 
     if (avcodec_open2(codecCtx, codec, NULL) < 0) {
-      cerr << "Failed to open decoder for stream #" << streamIndex << " in file " << path.data();
+      cerr << "Failed to open decoder for stream #" << streamIndex << " in file " << path.data() << endl;
       return NULL;
     }
 
@@ -276,8 +276,8 @@ namespace Tonic {
 
     float duration = static_cast<float>(format->duration) / AV_TIME_BASE;
     int numFrames = static_cast<int>(codecCtx->sample_rate * duration);
-    SampleTable destinationTable = SampleTable(numFrames, numChannels);
-    TonicFloat* decodeDataPtr = destinationTable.dataPointer();
+    std::unique_ptr<SampleTable> destinationTable = std::make_unique<SampleTable>(numFrames, numChannels);
+    TonicFloat* decodeDataPtr = destinationTable->dataPointer();
     if (decodeDataPtr == nullptr) {
       cerr << "decodeDataPtr is nullptr" << endl;
       return NULL;
@@ -308,7 +308,7 @@ namespace Tonic {
     // totalDecodedFrames: 661426; numFrames: 663552
     // Shrink the sample table to actual size
     if (totalDecodedFrames < numFrames) {
-      destinationTable.resize(totalDecodedFrames, numChannels);
+      destinationTable->resize(totalDecodedFrames, numChannels);
     }
 
     // Flush the decoder

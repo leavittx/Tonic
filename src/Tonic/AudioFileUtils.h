@@ -13,7 +13,7 @@
 
 namespace Tonic {
   
-  SampleTable loadAudioFile(string path, int numChannels = 2);
+  std::unique_ptr<SampleTable> loadAudioFile(string path, int numChannels = 2);
   
 }
 
