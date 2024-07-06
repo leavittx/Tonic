@@ -47,6 +47,8 @@
 #include "Tonic/stk_Wurley.h"
 #include "Tonic/stk_FreeVerb.h"
 #include "Tonic/stk_Drummer.h"
+#include "Tonic/stk_Shakers.h"
+#include "Tonic/stk_Resonate.h"
 
 // -------- Generators ---------
 
