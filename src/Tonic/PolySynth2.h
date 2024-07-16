@@ -38,7 +38,7 @@ public:
 			addVoice(createFn());
 	}
 
-	void noteOn(int note, int velocity)
+	void noteOn(int note, float velocity)
 	{
 		allocator.noteOn(note, velocity);
 	}
@@ -65,7 +65,7 @@ public:
 	};
 
 	void addVoice(Generator gen, Synth synth, int instanceIdx);
-	void noteOn(int noteNumber, int velocity);
+	void noteOn(int noteNumber, float velocity);
 	void noteOff(int noteNumber);
 
 protected:

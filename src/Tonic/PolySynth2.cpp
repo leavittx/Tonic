@@ -39,7 +39,7 @@ void BasicPolyphonicAllocator2::addVoice(Generator gen, Synth synth, int instanc
   voiceData.push_back(v);
 }
 
-void BasicPolyphonicAllocator2::noteOn(int note, int velocity)
+void BasicPolyphonicAllocator2::noteOn(int note, float velocity)
 {
   int voiceNumber = getNextVoice(note);
 
