@@ -44,7 +44,7 @@ namespace Tonic {
       
       ControlGeneratorOutput valueOutput = valueGen.tick(context);
       
-      if (valueOutput.triggered){
+      //if (valueOutput.triggered){
         
 #ifdef USE_APPLE_ACCELERATE
         
@@ -52,10 +52,14 @@ namespace Tonic {
         
 #else
         
+        //for (int idx = 0; idx < outputFrames_.size(); ++idx)
+        //{
+        //  buffStart[idx] = valueOutput.value;
+        //}
         std::fill(buffStart, buffStart + outputFrames_.size(), valueOutput.value);
         
 #endif
-      }
+      //}
     }
 
   }
