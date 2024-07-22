@@ -24,6 +24,7 @@ namespace Tonic {
       stk::Resonate resonate_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &resonate_; }
 
     protected:
       ControlGenerator     frequency_;

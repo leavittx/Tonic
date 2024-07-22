@@ -24,6 +24,7 @@ namespace Tonic {
       stk::BlowBotl blowBotl_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &blowBotl_; }
 
     protected:
       ControlGenerator     frequency_;

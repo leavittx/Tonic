@@ -24,6 +24,7 @@ namespace Tonic {
       stk::Rhodey rhodey_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &rhodey_; }
 
     protected:
       ControlGenerator     frequency_;

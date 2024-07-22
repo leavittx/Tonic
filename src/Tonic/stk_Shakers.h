@@ -24,6 +24,7 @@ namespace Tonic {
       stk::Shakers shakers_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &shakers_; }
 
     protected:
       ControlGenerator     frequency_;

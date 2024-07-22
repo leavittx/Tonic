@@ -14,6 +14,12 @@
 
 #include "TonicFrames.h"
 #include <cmath>
+
+namespace stk
+{
+  class Instrmnt;
+}
+
 namespace Tonic {
 
   namespace Tonic_{
@@ -36,12 +42,15 @@ namespace Tonic {
       virtual bool isInstrument() const { return false; }
       virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) {}
       virtual void noteOff(TonicFloat amplitude) {}
+      void controlChange(int number, TonicFloat value);
       
     protected:
-      
+
       // override point for defining generator behavior
       // subclasses should implment to fill frames with new data
       virtual void computeSynthesisBlock( const SynthesisContext_ &context ) {};
+
+      virtual stk::Instrmnt* getStkInstrument() { return nullptr; }
 
       
       bool            isStereoOutput_;
@@ -69,6 +78,7 @@ namespace Tonic {
       //virtual void noteOff(TonicFloat amplitude) {}
 
       virtual bool isInstrument() const override { return true; }
+      stk::Instrmnt* getStkInstrument() override = 0;
     };
 
   }
@@ -91,6 +101,7 @@ namespace Tonic {
     virtual bool isInstrument() const { return obj->isInstrument(); }
     virtual void noteOn(TonicFloat frequency, TonicFloat amplitude) { obj->noteOn(frequency, amplitude); }
     virtual void noteOff(TonicFloat amplitude) { obj->noteOff(amplitude); }
+    void controlChange(int number, TonicFloat value) { obj->controlChange(number, value); }
 
   };
 

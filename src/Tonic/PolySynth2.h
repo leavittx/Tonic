@@ -34,8 +34,10 @@ public:
 	typedef Generator(VoiceCreateFn)();
 	void addVoices(VoiceCreateFn createFn, int count)
 	{
-		for (int i = 0; i < count; i++)
-			addVoice(createFn());
+    for (int idx = 0; idx < count; ++idx)
+    {
+      addVoice(createFn());
+    }
 	}
 
 	void noteOn(int note, float velocity)
@@ -47,6 +49,11 @@ public:
 	{
 		allocator.noteOff(note);
 	}
+
+  void controlChange(int number, float value)
+  {
+    allocator.controlChange(number, value);
+  }
 
 protected:
 	VoiceAllocator allocator;
@@ -67,6 +74,7 @@ public:
 	void addVoice(Generator gen, Synth synth, int instanceIdx);
 	void noteOn(int noteNumber, float velocity);
 	void noteOff(int noteNumber);
+  void controlChange(int number, float value);
 
 protected:
 	virtual int getNextVoice(int note);

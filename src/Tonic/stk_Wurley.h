@@ -24,6 +24,7 @@ namespace Tonic {
       stk::Wurley wurley_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &wurley_; }
 
     protected:
       ControlGenerator     frequency_;

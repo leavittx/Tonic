@@ -10,6 +10,7 @@
 
 
 #include "Generator.h"
+#include "Instrmnt.h"
 
 namespace Tonic{ namespace Tonic_{
   
@@ -26,4 +27,10 @@ namespace Tonic{ namespace Tonic_{
     isStereoOutput_ = stereo;
   }
 
+  void Generator_::controlChange(int number, TonicFloat value){
+    auto* stkInstrument = getStkInstrument();
+    if (stkInstrument){
+      stkInstrument->controlChange(number, value);
+    }
+  }
 }}

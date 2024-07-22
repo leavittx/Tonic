@@ -44,7 +44,10 @@ void BasicPolyphonicAllocator2::noteOn(int note, float velocity)
   int voiceNumber = getNextVoice(note);
 
   if (voiceNumber < 0)
-    return; // no voice available
+  {
+    // No voice available
+    return;
+  }
 
   cerr << ">> " << "Starting note " << note << " on voice " << voiceNumber << "\n";
 
@@ -80,13 +83,13 @@ void BasicPolyphonicAllocator2::noteOn(int note, float velocity)
 
 void BasicPolyphonicAllocator2::noteOff(int note)
 {
-  // clear the oldest active voice with this note number
+  // Clear the oldest active voice with this note number
   for (int voiceNumber : activeVoiceQueue)
   {
     PolyVoice& voice = voiceData[voiceNumber];
     if (voice.currentNote == note)
     {
-      cout << ">> " << "Stopping note " << note << " on voice " << voiceNumber << "\n";
+      cerr << ">> " << "Stopping note " << note << " on voice " << voiceNumber << "\n";
 
       if (voice.gen.isInstrument())
       {
@@ -103,6 +106,22 @@ void BasicPolyphonicAllocator2::noteOff(int note)
       inactiveVoiceQueue.push_back(voiceNumber);
 
       break;
+    }
+  }
+}
+
+void BasicPolyphonicAllocator2::controlChange(int number, float value)
+{
+  for (int voiceNumber : activeVoiceQueue)
+  {
+    PolyVoice& voice = voiceData[voiceNumber];
+    if (voice.gen.isInstrument())
+    {
+      voice.gen.controlChange(number, value);
+    }
+    else
+    {
+      /// TODO
     }
   }
 }

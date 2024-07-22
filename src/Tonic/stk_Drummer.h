@@ -24,6 +24,7 @@ namespace Tonic {
       stk::Drummer drummer_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &drummer_; }
 
     protected:
       ControlGenerator     frequency_;

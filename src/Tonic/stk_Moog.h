@@ -24,6 +24,7 @@ namespace Tonic {
       stk::Moog moog_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &moog_; }
 
     protected:
       ControlGenerator     frequency_;

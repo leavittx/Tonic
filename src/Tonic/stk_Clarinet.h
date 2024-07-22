@@ -24,6 +24,7 @@ namespace Tonic {
       stk::Clarinet clarinet_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
+      stk::Instrmnt* getStkInstrument() override { return &clarinet_; }
 
     protected:
       ControlGenerator     frequency_;
