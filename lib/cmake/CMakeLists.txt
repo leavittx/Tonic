@@ -96,7 +96,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/src STK_SR
 add_library(TonicLib ${SRC_LIST} ${STK_SRC_LIST})
 target_include_directories(TonicLib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/include")
 target_include_directories(TonicLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic")
-
+target_compile_features(TonicLib PRIVATE cxx_std_20)
 
 
 if(POLICY CMP0074)
