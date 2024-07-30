@@ -64,7 +64,7 @@ namespace Tonic {
     }
 
     void   GranularSynth_::computeSynthesisBlock(const SynthesisContext_& context) {
-      unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
+      unsigned long bufferFrames = outputFrames_.frames();
       stk::StkFloat* samples = (stk::StkFloat*)&outputFrames_[0];
       const stk::StkFrames& lastframe = grani_.lastFrame();
 
@@ -84,7 +84,7 @@ namespace Tonic {
         voicesCurrent_ = voicesValue;
       }
 
-      for (unsigned int i = 0; i < bufferFrames; i++) {
+      for (unsigned long i = 0; i < bufferFrames; i++) {
         grani_.tick();
         for (int j = 0; j < lastframe.channels(); j++)
           *samples++ = lastframe[j];

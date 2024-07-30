@@ -50,6 +50,9 @@
 #include "Tonic/stk_Shakers.h"
 #include "Tonic/stk_Resonate.h"
 
+// -------- Audio in ---------
+#include "Tonic/AudioInput.h"
+
 // -------- Generators ---------
 
 // Oscillators

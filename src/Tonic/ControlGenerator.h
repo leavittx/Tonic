@@ -12,6 +12,7 @@
 #define TONIC_CONTROLGENERATOR_H
 
 #include "TonicCore.h"
+#include "SynthesisContext.h"
 
 namespace Tonic {
   

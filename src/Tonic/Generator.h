@@ -13,6 +13,7 @@
 #define TONIC_GENERATOR_H
 
 #include "TonicFrames.h"
+#include "SynthesisContext.h"
 #include <cmath>
 
 namespace stk
@@ -46,6 +47,8 @@ namespace Tonic {
       
     protected:
 
+      // override for processing audio input frames
+      virtual void setInputFrames(TonicFrames& inputFrames) {};
       // override point for defining generator behavior
       // subclasses should implment to fill frames with new data
       virtual void computeSynthesisBlock( const SynthesisContext_ &context ) {};
@@ -54,6 +57,7 @@ namespace Tonic {
 
       
       bool            isStereoOutput_;
+      // Each generator outputs samples to this sample array
       TonicFrames     outputFrames_;
       unsigned long   lastFrameIndex_;
       
@@ -67,7 +71,7 @@ namespace Tonic {
         lastFrameIndex_ = context.elapsedFrames;
       }
     
-      // copy synthesis block to frames passed in
+      // copy synthesis block to frames passed in for the output
       frames.copy(outputFrames_);
       
     }

@@ -4,6 +4,7 @@ project(Tonic)
 
 option(REALTIME "Realtime support" ON)
 option(ENABLE_WASAPI "Enable Windows Audio Session API support (windows only)" ON)
+option(ENABLE_ASIO "Enable ASIO (windows only)" ON)
 option(ENABLE_CORE "Enable CoreAudio API support (mac only)" ON)
 
 #========================================#
@@ -55,12 +56,10 @@ if(REALTIME)
         link_libraries(winmm ole32 wsock32)
         add_definitions(-D__WINDOWS_MM__)
 
-        # TODO: ASIO NOT WORKING YET
         if(ENABLE_ASIO)
             message("ENALBING ASIO")
-            include_directories("./src/include")
-            # target_sources(stk PUBLIC "${CMAKE_SOURCE_DIR}/src/include/asio.cpp" "${CMAKE_SOURCE_DIR}/src/include/asiodrivers.cpp"
-            #                     "${CMAKE_SOURCE_DIR}/src/include/asiolist.cpp" "${CMAKE_SOURCE_DIR}/src/include/iasiothiscallresolver.cpp")
+            include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/src/include")
+			aux_source_directory("${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/src/include" EXTRA_SRC_LIST)
             add_definitions(-D__WINDOWS_ASIO__)
         endif()
 
@@ -93,7 +92,7 @@ add_definitions(-w)
 message(${CMAKE_CURRENT_SOURCE_DIR})
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic SRC_LIST)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/src STK_SRC_LIST)
-add_library(TonicLib ${SRC_LIST} ${STK_SRC_LIST})
+add_library(TonicLib ${SRC_LIST} ${STK_SRC_LIST} ${EXTRA_SRC_LIST})
 target_include_directories(TonicLib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/include")
 target_include_directories(TonicLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic")
 
