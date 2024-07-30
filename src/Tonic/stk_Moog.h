@@ -49,12 +49,6 @@ namespace Tonic {
     TONIC_MAKE_CTRL_GEN_SETTERS(Moog, frequency, setFrequency);
     TONIC_MAKE_CTRL_GEN_SETTERS(Moog, modulationSpeed, setModulationSpeed);
     TONIC_MAKE_CTRL_GEN_SETTERS(Moog, modulationDepth, setModulationDepth);
-    void noteOn(TonicFloat frequency, TonicFloat amplitude) override {
-      this->gen()->noteOn(frequency, amplitude);
-    }
-    void noteOff(TonicFloat amplitude) override {
-      this->gen()->noteOff(amplitude);
-    }
   };
 
 

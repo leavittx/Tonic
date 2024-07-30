@@ -40,12 +40,6 @@ namespace Tonic {
   class Wurley : public TemplatedInstrument<Tonic_::Wurley_> {
   public:
     TONIC_MAKE_CTRL_GEN_SETTERS(Wurley, frequency, setFrequency);
-    void noteOn(TonicFloat frequency, TonicFloat amplitude) override {
-      this->gen()->noteOn(frequency, amplitude);
-    }
-    void noteOff(TonicFloat amplitude) override {
-      this->gen()->noteOff(amplitude);
-    }
   };
 
 

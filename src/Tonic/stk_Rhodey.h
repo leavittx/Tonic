@@ -40,12 +40,6 @@ namespace Tonic {
   class Rhodey : public TemplatedInstrument<Tonic_::Rhodey_> {
   public:
     TONIC_MAKE_CTRL_GEN_SETTERS(Rhodey, frequency, setFrequency);
-    void noteOn(TonicFloat frequency, TonicFloat amplitude) override {
-      this->gen()->noteOn(frequency, amplitude);
-    }
-    void noteOff(TonicFloat amplitude) override {
-      this->gen()->noteOff(amplitude);
-    }
   };
 
 

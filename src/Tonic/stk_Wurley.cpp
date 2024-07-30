@@ -31,14 +31,14 @@ namespace Tonic {
     }
 
     void  Wurley_::computeSynthesisBlock(const SynthesisContext_& context) {
-      unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
+      unsigned long bufferFrames = outputFrames_.frames();
       stk::StkFloat* samples = (stk::StkFloat*)&outputFrames_[0];
       const stk::StkFrames& lastframe = wurley_.lastFrame();
 
       float frequencyValue = frequency_.tick(context).value;
       //wurley_.setFrequency(frequencyValue);
     
-      for (unsigned int i = 0; i < bufferFrames; i++) {
+      for (unsigned long i = 0; i < bufferFrames; i++) {
         wurley_.tick();
         for (int j = 0; j < lastframe.channels(); j++)
           *samples++ = lastframe[j];

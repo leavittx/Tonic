@@ -15,7 +15,7 @@ namespace Tonic {
 
     Drummer_::Drummer_() {
       stk::Stk::setSampleRate(Tonic::sampleRate());
-      setIsStereoOutput(drummer_.channelsOut() == 2);
+      setIsStereoOutput(hevyMetl_.channelsOut() == 2);
     }
 
     void  Drummer_::setFrequency(ControlGenerator controlGenerator) {
@@ -23,23 +23,23 @@ namespace Tonic {
     }
 
     void  Drummer_::noteOn(TonicFloat frequency, TonicFloat amplitude) {
-      drummer_.noteOn(frequency, amplitude);
+      hevyMetl_.noteOn(frequency, amplitude);
     }
 
     void  Drummer_::noteOff(TonicFloat amplitude) {
-      drummer_.noteOff(amplitude);
+      hevyMetl_.noteOff(amplitude);
     }
 
     void  Drummer_::computeSynthesisBlock(const SynthesisContext_& context) {
-      unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
+      unsigned long bufferFrames = outputFrames_.frames();
       stk::StkFloat* samples = (stk::StkFloat*)&outputFrames_[0];
-      const stk::StkFrames& lastframe = drummer_.lastFrame();
+      const stk::StkFrames& lastframe = hevyMetl_.lastFrame();
 
       float frequencyValue = frequency_.tick(context).value;
       //drummer_.setFrequency(frequencyValue);
     
-      for (unsigned int i = 0; i < bufferFrames; i++) {
-        drummer_.tick();
+      for (unsigned long i = 0; i < bufferFrames; i++) {
+        hevyMetl_.tick();
         for (int j = 0; j < lastframe.channels(); j++)
           *samples++ = lastframe[j];
       }

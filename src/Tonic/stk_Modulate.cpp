@@ -36,7 +36,7 @@ namespace Tonic {
     }
 
     void   Modulate_::computeSynthesisBlock(const SynthesisContext_& context) {
-      unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
+      unsigned long bufferFrames = outputFrames_.frames();
       stk::StkFloat* samples = (stk::StkFloat*)&outputFrames_[0];
       const stk::StkFrames& lastframe = modulate_.lastFrame();
 
@@ -50,7 +50,7 @@ namespace Tonic {
       modulate_.setRandomRate(randomRateValue);
       modulate_.setRandomGain(randomGainValue);
 
-      for (unsigned int i = 0; i < bufferFrames; i++) {
+      for (unsigned long i = 0; i < bufferFrames; i++) {
         modulate_.tick();
         for (int j = 0; j < lastframe.channels(); j++)
           *samples++ = lastframe[j];

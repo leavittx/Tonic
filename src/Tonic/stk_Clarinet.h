@@ -40,12 +40,6 @@ namespace Tonic {
   class Clarinet : public TemplatedInstrument<Tonic_::Clarinet_> {
   public:
     TONIC_MAKE_CTRL_GEN_SETTERS(Clarinet, frequency, setFrequency);
-    void noteOn(TonicFloat frequency, TonicFloat amplitude) override {
-      this->gen()->noteOn(frequency, amplitude);
-    }
-    void noteOff(TonicFloat amplitude) override {
-      this->gen()->noteOff(amplitude);
-    }
   };
 
 

@@ -52,12 +52,6 @@ namespace Tonic {
     TONIC_MAKE_CTRL_GEN_SETTERS(Resonate, resonanceRadius, setResonanceRadius);
     TONIC_MAKE_CTRL_GEN_SETTERS(Resonate, notchFrequency, setNotchFrequency);
     TONIC_MAKE_CTRL_GEN_SETTERS(Resonate, notchRadius, setNotchRadius);
-    void noteOn(TonicFloat frequency, TonicFloat amplitude) override {
-      this->gen()->noteOn(frequency, amplitude);
-    }
-    void noteOff(TonicFloat amplitude) override {
-      this->gen()->noteOff(amplitude);
-    }
   };
 
 

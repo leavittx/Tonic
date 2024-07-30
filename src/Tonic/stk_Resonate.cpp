@@ -47,7 +47,7 @@ namespace Tonic {
     }
 
     void  Resonate_::computeSynthesisBlock(const SynthesisContext_& context) {
-      unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
+      unsigned long bufferFrames = outputFrames_.frames();
       stk::StkFloat* samples = (stk::StkFloat*)&outputFrames_[0];
       const stk::StkFrames& lastframe = resonate_.lastFrame();
 
@@ -61,7 +61,7 @@ namespace Tonic {
       resonate_.setNotch(notchFrequencyValue, notchRadiusValue);
       resonate_.setEqualGainZeroes();
     
-      for (unsigned int i = 0; i < bufferFrames; i++) {
+      for (unsigned long i = 0; i < bufferFrames; i++) {
         resonate_.tick();
         for (int j = 0; j < lastframe.channels(); j++)
           *samples++ = lastframe[j];

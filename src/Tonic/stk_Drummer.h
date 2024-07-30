@@ -21,10 +21,10 @@ namespace Tonic {
     class Drummer_ : public Instrument_ {
 
     protected:
-      stk::Drummer drummer_;
+      stk::Drummer hevyMetl_;
 
       void computeSynthesisBlock(const SynthesisContext_& context);
-      stk::Instrmnt* getStkInstrument() override { return &drummer_; }
+      stk::Instrmnt* getStkInstrument() override { return &hevyMetl_; }
 
     protected:
       ControlGenerator     frequency_;
@@ -40,12 +40,6 @@ namespace Tonic {
   class Drummer : public TemplatedInstrument<Tonic_::Drummer_> {
   public:
     TONIC_MAKE_CTRL_GEN_SETTERS(Drummer, frequency, setFrequency);
-    void noteOn(TonicFloat frequency, TonicFloat amplitude) override {
-      this->gen()->noteOn(frequency, amplitude);
-    }
-    void noteOff(TonicFloat amplitude) override {
-      this->gen()->noteOff(amplitude);
-    }
   };
 
 

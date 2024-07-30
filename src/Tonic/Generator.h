@@ -139,6 +139,13 @@ namespace Tonic {
     }
   public:
     TemplatedInstrument() : Instrument(new GenType) {}
+
+    void noteOn(TonicFloat frequency, TonicFloat amplitude) override {
+      this->gen()->noteOn(frequency, amplitude);
+    }
+    void noteOff(TonicFloat amplitude) override {
+      this->gen()->noteOff(amplitude);
+    }
   };
   
 }

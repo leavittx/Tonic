@@ -65,7 +65,7 @@ namespace Tonic {
       }
 
       // In Reverb, kSynthesisBlockSize is used
-      for (unsigned int i = 0; i < bufferFrames; i++) {
+      for (unsigned long i = 0; i < bufferFrames; i++) {
         freeVerb_.tick(*inptr++);
         for (int j = 0; j < lastframe.channels(); j++)
           *outptr++ = lastframe[j];

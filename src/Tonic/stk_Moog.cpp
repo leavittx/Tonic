@@ -43,7 +43,7 @@ namespace Tonic {
     }
 
     void  Moog_::computeSynthesisBlock(const SynthesisContext_& context) {
-      unsigned long bufferFrames = (unsigned int)outputFrames_.frames();
+      unsigned long bufferFrames = outputFrames_.frames();
       stk::StkFloat* samples = (stk::StkFloat*)&outputFrames_[0];
       const stk::StkFrames& lastframe = moog_.lastFrame();
 
@@ -55,7 +55,7 @@ namespace Tonic {
       //moog_.setModulationSpeed(modulationSpeedValue);
       //moog_.setModulationDepth(modulationDepthValue);
 
-      for (unsigned int i = 0; i < bufferFrames; i++) {
+      for (unsigned long i = 0; i < bufferFrames; i++) {
         moog_.tick();
         for (int j = 0; j < lastframe.channels(); j++)
           *samples++ = lastframe[j];
