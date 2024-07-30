@@ -19,7 +19,8 @@ namespace Tonic {
     
     ControlParameterTypeContinuous = 0,
     ControlParameterTypeToggle,
-    ControlParameterTypeMomentary
+    ControlParameterTypeMomentary,
+    ControlParameterTypeInteger,
     
   } ControlParameterType;
   
