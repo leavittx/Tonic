@@ -45,10 +45,16 @@
 #include "Tonic/stk_BlowBotl.h"
 #include "Tonic/stk_Clarinet.h"
 #include "Tonic/stk_Wurley.h"
-#include "Tonic/stk_FreeVerb.h"
 #include "Tonic/stk_Drummer.h"
 #include "Tonic/stk_Shakers.h"
 #include "Tonic/stk_Resonate.h"
+#include "Tonic/stk_BandedWG.h"
+#include "Tonic/stk_BeeThree.h"
+#include "Tonic/stk_HevyMetl.h"
+#include "Tonic/stk_PercFlut.h"
+#include "Tonic/stk_TubeBell.h"
+#include "Tonic/stk_FreeVerb.h"
+#include "Tonic/stk_Chorus.h"
 
 // -------- Audio in ---------
 #include "Tonic/AudioInput.h"
