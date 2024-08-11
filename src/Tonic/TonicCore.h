@@ -118,7 +118,9 @@ namespace Tonic {
   namespace Tonic_ {
     
     static TonicFloat sampleRate_ = 44100.f;
-    
+
+    static int numInputChannels_ = 0;
+
   }
   
   // -- Global Constants --
@@ -132,6 +134,16 @@ namespace Tonic {
   //! Return sample rate
   static TonicFloat sampleRate(){
     return Tonic_::sampleRate_;
+  };
+
+  //! Set the number of audio input channels
+  static void setNumInputChannels(int numInputChannels) {
+    Tonic_::numInputChannels_ = numInputChannels;
+  }
+
+  //! Return the number of audio input channels
+  static int numInputChannels() {
+    return Tonic_::numInputChannels_;
   };
 
   //! "Vector" size for audio processing. ControlGenerators update at this rate.
