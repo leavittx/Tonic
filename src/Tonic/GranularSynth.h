@@ -35,6 +35,7 @@ namespace Tonic {
       ControlGenerator     voices_;
       int                  voicesCurrent_ = -1;
       std::string          filePathCurrent_;
+      bool                 fileLoaded_ = false;
 
     public:
       void setRandomFactor(ControlGenerator randomFactor);
@@ -45,6 +46,7 @@ namespace Tonic {
       void setDelay(ControlGenerator delay);
       void setVoices(ControlGenerator voices);
       void setFilePath(const std::string& path, bool typeRaw);
+      bool isFileLoaded() const;
       GranularSynth_();
     };
   }
@@ -60,6 +62,9 @@ namespace Tonic {
     TONIC_MAKE_CTRL_GEN_SETTERS(GranularSynth, voices, setVoices);
     void setFilePath(const std::string& path, bool typeRaw = false) {
       this->gen()->setFilePath(path, typeRaw);
+    }
+    bool isFileLoaded() {
+      return this->gen()->isFileLoaded();
     }
   };
 

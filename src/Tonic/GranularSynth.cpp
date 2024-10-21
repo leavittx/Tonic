@@ -54,13 +54,20 @@ namespace Tonic {
         }
         catch (stk::StkError&) {
           cerr << "error" << endl;
+          fileLoaded_ = false;
+          return;
         }
         filePathCurrent_ = path;
+        fileLoaded_ = true;
 
         if (grani_.channelsOut() != 2) {
           cerr << "channels: " << grani_.channelsOut() << endl;
         }
       }
+    }
+
+    bool GranularSynth_::isFileLoaded() const {
+      return fileLoaded_;
     }
 
     void   GranularSynth_::computeSynthesisBlock(const SynthesisContext_& context) {
