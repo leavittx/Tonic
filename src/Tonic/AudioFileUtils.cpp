@@ -35,7 +35,7 @@ namespace Tonic {
 
   const AVChannelLayout* getChannelLayout2(unsigned numChannels)
   {
-    constexpr AVChannelLayout layouts[] = {
+    static const AVChannelLayout layouts[] = {
       AV_CHANNEL_LAYOUT_MONO,
       AV_CHANNEL_LAYOUT_STEREO
     };
