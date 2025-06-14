@@ -2,15 +2,8 @@
 //  AudioFileUtils.cpp
 //  TonicLib
 //
-//  Created by Morgan Packard on 10/26/13.
-//  Copyright (c) 2013 Nick Donaldson. All rights reserved.
-//
 
 #include "AudioFileUtils.h"
-
-#ifdef __APPLE__
-  #include <AudioToolbox/AudioToolbox.h>
-#endif
 
 extern "C"
 {
@@ -22,87 +15,11 @@ extern "C"
 }
 
 namespace Tonic {
-
-
-#if 0
-
-  void checkCAError(OSStatus error, const char *operation){
-    if (error == noErr) return;
-    char errorString[20];
-    // See if it appears to be a 4-char-code
-    *(UInt32 *)(errorString + 1) = CFSwapInt32HostToBig(error);
-    if (isprint(errorString[1]) && isprint(errorString[2]) &&
-        isprint(errorString[3]) && isprint(errorString[4])) {
-        errorString[0] = errorString[5] = '\'';
-        errorString[6] = '\0';
-    } else {
-        // No, format it as an integer
-        sprintf(errorString, "%d", (int)error);
-    }
-    // TODO: optimize errorstring if it is too slow
-    cerr << "Error: " << operation << " (" << errorString << ")" << endl;
-  }
-  
-
-  SampleTable loadAudioFile(string path, int numChannels){
-  
-    static const int BYTESPERSAMPLE = sizeof(TonicFloat);
-    
-    // Get the file handle
-    ExtAudioFileRef inputFile;
-    CFStringRef cfStringRef; 
-    cfStringRef = CFStringCreateWithCString(kCFAllocatorDefault, path.c_str(), kCFStringEncodingMacRoman);
-    CFURLRef inputFileURL = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, cfStringRef, kCFURLPOSIXPathStyle, false);
-    CFRelease(cfStringRef);
-    
-    checkCAError(ExtAudioFileOpenURL(inputFileURL,  &inputFile), "ExtAudioFileOpenURL failed");
-    CFRelease(inputFileURL);
-    
-    // Define the format for the data we want to extract from the audio file
-    AudioStreamBasicDescription outputFormat;
-    memset(&outputFormat, 0, sizeof(outputFormat));
-    outputFormat.mSampleRate = 44100.0;
-    outputFormat.mFormatID = kAudioFormatLinearPCM;
-    outputFormat.mFormatFlags = kAudioFormatFlagIsFloat;
-    outputFormat.mBytesPerPacket = BYTESPERSAMPLE * numChannels;
-    outputFormat.mFramesPerPacket = 1;
-    outputFormat.mBytesPerFrame = BYTESPERSAMPLE * numChannels;
-    outputFormat.mChannelsPerFrame = numChannels;
-    outputFormat.mBitsPerChannel = 32;
-    OSStatus error = ExtAudioFileSetProperty(inputFile, kExtAudioFileProperty_ClientDataFormat, sizeof(AudioStreamBasicDescription), &outputFormat);
-    checkCAError(error, "Error setting kExtAudioFileProperty_ClientDataFormat.");
-
-    // Determine the length of the file, in frames
-    SInt64 numFrames;
-    UInt32 intSize = sizeof(SInt64);
-    error = ExtAudioFileGetProperty(inputFile, kExtAudioFileProperty_FileLengthFrames, &intSize, &numFrames);
-    checkCAError(error, "Error reading number of frames.");
-    
-    // change sampleTable numframes to long long
-    SampleTable destinationTable = SampleTable((int)numFrames, numChannels);
-    
-    // wrap the destination buffer in an AudioBufferList
-    AudioBufferList convertedData;
-    convertedData.mNumberBuffers = 1;
-    convertedData.mBuffers[0].mNumberChannels = outputFormat.mChannelsPerFrame;
-    convertedData.mBuffers[0].mDataByteSize = (UInt32)destinationTable.size() * BYTESPERSAMPLE;
-    convertedData.mBuffers[0].mData = destinationTable.dataPointer();
-    
-    UInt32 numFrames32 = (UInt32)numFrames;
-    ExtAudioFileRead(inputFile, &numFrames32, &convertedData);
-    
-    ExtAudioFileDispose(inputFile);
-    
-    return destinationTable;
-  }
-  
-#else
-
   void ffmpeg_log_callback(void* ptr, int level, const char* fmt, va_list vargs)
   {
     if (level <= av_log_get_level())
     {
-      const int buffer_size = 300;
+      const int buffer_size = 4096;
       static char buffer[buffer_size];
 #ifdef _WIN32
       vsprintf_s(buffer, buffer_size, fmt, vargs);
@@ -116,19 +33,6 @@ namespace Tonic {
     }
   }
 
-  int getChannelLayout(int numChannels) {
-    switch (numChannels) {
-    case 1:
-      return AV_CH_LAYOUT_MONO;
-    case 2:
-      return AV_CH_LAYOUT_STEREO;
-    default:
-      cerr << numChannels << " channels not supported" << endl;
-      return -1;
-    }
-  }
-
-#ifndef FF_API_OLD_CHANNEL_LAYOUT
   const AVChannelLayout* getChannelLayout2(unsigned numChannels)
   {
     constexpr AVChannelLayout layouts[] = {
@@ -137,12 +41,11 @@ namespace Tonic {
     };
     if (numChannels > sizeof(layouts) / sizeof(AVChannelLayout))
     {
-      cerr << numChannels << " not supported" << endl;
-      numChannels = 1;
+      cerr << numChannels << " output channels not supported" << endl;
+      return nullptr;
     }
     return &layouts[numChannels - 1];
   }
-#endif
 
   int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, int channels, TonicFloat* decodeBuffer) {
     int i, ch;
@@ -177,8 +80,8 @@ namespace Tonic {
 
       // Resample frames
       framesCount = swr_convert(swr,
-                              (uint8_t**)&decodeBuffer, frame->nb_samples,      // out
-                              (const uint8_t**)frame->data, frame->nb_samples); // in
+                               (uint8_t**)&decodeBuffer, frame->nb_samples,      // out
+                               (const uint8_t**)frame->data, frame->nb_samples); // in
       if (framesCount > 0) {
         int samplesCount = framesCount * channels;
         decodeBuffer += samplesCount;
@@ -189,23 +92,23 @@ namespace Tonic {
   
   std::unique_ptr<SampleTable> loadAudioFile(string path, int numChannels) {
     const AVCodec* codec;
-    AVCodecContext* codecCtx = NULL;
+    AVCodecContext* codecCtx = nullptr;
     int ret;
     
-    av_log_set_level(AV_LOG_ERROR);
     av_log_set_callback(ffmpeg_log_callback);
+    av_log_set_level(AV_LOG_TRACE);
     
     AVPacket* pkt = av_packet_alloc();
 
     // Get format from audio file
     AVFormatContext* format = avformat_alloc_context();
-    if (avformat_open_input(&format, path.data(), NULL, NULL) != 0) {
+    if (avformat_open_input(&format, path.data(), nullptr, nullptr) != 0) {
       cerr << "Could not open file " << path.data() << endl;
-      return NULL;
+      return nullptr;
     }
-    if (avformat_find_stream_info(format, NULL) < 0) {
+    if (avformat_find_stream_info(format, nullptr) < 0) {
       cerr << "Could not retrieve stream info from file " << path.data() << endl;
-      return NULL;
+      return nullptr;
     }
 
     // Find the index of the first audio stream
@@ -218,7 +121,7 @@ namespace Tonic {
     }
     if (streamIndex == -1) {
       cerr << "Could not retrieve audio stream from file " << path.data() << endl;
-      return NULL;
+      return nullptr;
     }
     AVStream* stream = format->streams[streamIndex];
 
@@ -226,52 +129,50 @@ namespace Tonic {
     codecCtx = avcodec_alloc_context3(nullptr);
     if (!codecCtx) {
       cerr << "Unable to allocate memory for codec context" << endl;
-      return NULL;
+      return nullptr;
     }
 
     /// FIXME: not needed
     ret = avcodec_parameters_to_context(codecCtx, stream->codecpar);
     if (ret < 0)
-      return NULL;
+      return nullptr;
     codecCtx->pkt_timebase = stream->time_base;
 
     codec = avcodec_find_decoder(codecCtx->codec_id);
 
-    if (avcodec_open2(codecCtx, codec, NULL) < 0) {
+    if (avcodec_open2(codecCtx, codec, nullptr) < 0) {
       cerr << "Failed to open decoder for stream #" << streamIndex << " in file " << path.data() << endl;
-      return NULL;
+      return nullptr;
     }
 
     // Setup resampling to the FP32 format
     const int resampleSampleRate = Tonic::sampleRate();
-    const int resampleChannelCount = numChannels;
-    const int resampleChannelLayout = getChannelLayout(numChannels);
     const AVSampleFormat resampleSampleFmt = AV_SAMPLE_FMT_FLT;
+    const AVChannelLayout* outputChannelLayout = getChannelLayout2(numChannels);
 
-#if FF_API_OLD_CHANNEL_LAYOUT
-    SwrContext* swr = swr_alloc();
-    av_opt_set_int(swr, "in_channel_count", codecCtx->channels, 0);
-    av_opt_set_int(swr, "out_channel_count", resampleChannelCount, 0);
-    av_opt_set_int(swr, "in_channel_layout", codecCtx->channel_layout, 0);
-    av_opt_set_int(swr, "out_channel_layout", resampleChannelLayout, 0);
-    av_opt_set_int(swr, "in_sample_rate", codecCtx->sample_rate, 0);
-    av_opt_set_int(swr, "out_sample_rate", resampleSampleRate, 0);
-    av_opt_set_sample_fmt(swr, "in_sample_fmt", codecCtx->sample_fmt, 0);
-    av_opt_set_sample_fmt(swr, "out_sample_fmt", resampleSampleFmt, 0);
-#else
-    SwrContext* swr = nullptr;
-    if (swr_alloc_set_opts2(&swr, getChannelLayout2(numChannels), resampleSampleFmt, 
-                        resampleSampleRate, &codecCtx->ch_layout,
-                        codecCtx->sample_fmt, codecCtx->sample_rate, 0, nullptr))
-    {
-        cerr << "Failed to alloc and setup resampler" << endl;
-        return NULL;
+    if (!outputChannelLayout) {
+      return nullptr;
     }
-#endif                   
-    swr_init(swr);
+
+    SwrContext* swr = nullptr;
+    if (swr_alloc_set_opts2(&swr,
+                            outputChannelLayout, resampleSampleFmt, resampleSampleRate, 
+                            &codecCtx->ch_layout, codecCtx->sample_fmt, codecCtx->sample_rate, 
+                            0, nullptr) < 0)
+    {
+      cerr << "Failed to alloc and setup resampler" << endl;
+      return nullptr;
+    }
+
+    if (swr_init(swr) < 0) {
+      cerr << "Could not open resample context" << endl;
+      swr_free(&swr);
+      return nullptr;
+    }
+
     if (!swr_is_initialized(swr)) {
       cerr << "Resampler has not been properly initialized" << endl;
-      return NULL;
+      return nullptr;
     }
 
     float duration = static_cast<float>(format->duration) / AV_TIME_BASE;
@@ -280,13 +181,13 @@ namespace Tonic {
     TonicFloat* decodeDataPtr = destinationTable->dataPointer();
     if (decodeDataPtr == nullptr) {
       cerr << "decodeDataPtr is nullptr" << endl;
-      return NULL;
+      return nullptr;
     }
 
     AVFrame* frame = av_frame_alloc();
     if (!frame) {
       cerr << "Error allocating the frame" << endl;
-      return NULL;
+      return nullptr;
     }
 
     int totalDecodedFrames = 0;
@@ -296,7 +197,7 @@ namespace Tonic {
         auto decodedFrames = decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr);
         if (decodedFrames < 0) {
           cerr << "Error decoding audio frames" << endl;
-          return NULL;
+          return nullptr;
         }
         int decodedSamples = decodedFrames * numChannels;
         decodeDataPtr += decodedSamples;
@@ -312,7 +213,7 @@ namespace Tonic {
     }
 
     // Flush the decoder
-    pkt->data = NULL;
+    pkt->data = nullptr;
     pkt->size = 0;
     decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr);
 
@@ -325,5 +226,4 @@ namespace Tonic {
 
     return destinationTable;  
   }
-#endif
 }
