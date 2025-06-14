@@ -320,7 +320,7 @@ namespace Tonic {
     av_packet_free(&pkt);
     av_frame_free(&frame);
     swr_free(&swr);
-    avcodec_close(codecCtx);
+    avcodec_free_context(&codecCtx);
     avformat_free_context(format);
 
     return destinationTable;  
