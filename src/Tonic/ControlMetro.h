@@ -41,7 +41,7 @@ namespace Tonic {
       
       double sPerBeat = 60.0/max(0.001,bpm_.tick(context).value);
       double delta = context.elapsedTime - lastClickTime_;
-      if (delta >= 2*sPerBeat || delta < 0){
+      if (delta >= 2*sPerBeat || delta < 0 || lastClickTime_==0.0){
         // account for bpm interval outrunning tick interval or timer wrap-around
         lastClickTime_ = context.elapsedTime;
         output_.triggered = true;
@@ -69,7 +69,11 @@ namespace Tonic {
     ControlMetro(float bpm = 120){
       gen()->setBPMGen(ControlValue(bpm));
     }
-    
+
+    ControlMetro(ControlGenerator bpm){
+      gen()->setBPMGen(bpm);
+    }
+	  
     TONIC_MAKE_CTRL_GEN_SETTERS(ControlMetro, bpm, setBPMGen);
   };
 }
