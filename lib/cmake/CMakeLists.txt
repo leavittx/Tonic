@@ -104,18 +104,18 @@ if(POLICY CMP0074)
 endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 find_package(FFMPEG COMPONENTS avcodec avformat avutil swresample)
-message(${FFMPEG_avcodec_INCLUDE_DIRS})
-message(${FFMPEG_avcodec_LIBRARIES})
+message("${FFMPEG_avcodec_INCLUDE_DIRS}")
+message("${FFMPEG_avcodec_LIBRARIES}")
 target_include_directories(TonicLib PUBLIC ${FFMPEG_avcodec_INCLUDE_DIRS})
 target_link_libraries(TonicLib FFMPEG::avcodec FFMPEG::avformat FFMPEG::avutil)
 
 FILE(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic/*.h")
-message(${headers})
+message("${headers}")
 INSTALL(FILES ${headers} DESTINATION include/Tonic)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../src/Tonic.h DESTINATION include)
 
 FILE(GLOB stk_headers "${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/stk/include/*.h")
-message(${stk_headers})
+message("${stk_headers}")
 INSTALL(FILES ${stk_headers} DESTINATION include/stk)
 
 
