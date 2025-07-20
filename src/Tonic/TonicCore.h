@@ -117,9 +117,9 @@ namespace Tonic {
   /*! Objects under the Tonic_ namespace are internal DSP-level objects not intended for public usage */
   namespace Tonic_ {
     
-    static TonicFloat sampleRate_ = 44100.f;
+    extern TonicFloat sampleRate_;
 
-    static int numInputChannels_ = 0;
+    extern int numInputChannels_;
 
   }
   
