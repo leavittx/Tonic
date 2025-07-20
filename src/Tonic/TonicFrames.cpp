@@ -11,17 +11,7 @@
 
 #include "TonicFrames.h"
 
-
-
 namespace Tonic {
-
-  namespace Tonic_ {
-
-    TonicFloat sampleRate_ = 44100.f;
-
-    int numInputChannels_ = 0;
-
-  }
   
 
 TonicFrames :: TonicFrames( unsigned int nFrames, unsigned int nChannels )
