@@ -6,6 +6,8 @@
 #ifndef __TonicLib__AudioFileUtils__
 #define __TonicLib__AudioFileUtils__
 
+#include <memory>
+
 #include "SampleTable.h"
 
 namespace Tonic {
