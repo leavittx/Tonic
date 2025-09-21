@@ -6,6 +6,7 @@ option(REALTIME "Realtime support" ON)
 option(ENABLE_WASAPI "Enable Windows Audio Session API support (windows only)" ON)
 option(ENABLE_ASIO "Enable ASIO (windows only)" ON)
 option(ENABLE_CORE "Enable CoreAudio API support (mac only)" ON)
+option(ENABLE_ALSA "Enable ALSA API support (linux only)" ON)
 
 #========================================#
 #========== Realtime Support ============#
