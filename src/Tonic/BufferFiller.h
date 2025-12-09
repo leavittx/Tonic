@@ -77,7 +77,7 @@ namespace Tonic{
       TONIC_ENABLE_DENORMAL_ROUNDING();
 
 #ifdef TONIC_DEBUG
-      if (numChannels > outputFrames_.channels()) error("Mismatch in channels sent to Synth::fillBufferOfFloats", true);
+      if (numOutChannels > outputFrames_.channels()) error("Mismatch in channels sent to Synth::fillBufferOfFloats", true);
 #endif
 
       const unsigned long sampleCount = outputFrames_.size();
@@ -117,7 +117,7 @@ namespace Tonic{
       TONIC_ENABLE_DENORMAL_ROUNDING();
 
 #ifdef TONIC_DEBUG
-      if (numChannels > outputFrames_.channels()) error("Mismatch in channels sent to Synth::fillBufferOfFloats", true);
+      if (numOutChannels > outputFrames_.channels()) error("Mismatch in channels sent to Synth::fillBufferOfFloats", true);
 #endif
 
       const unsigned long synthesisBlockSampleCount = outputFrames_.size();

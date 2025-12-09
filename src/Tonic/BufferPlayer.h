@@ -49,7 +49,8 @@ namespace Tonic {
     };
     
     inline void BufferPlayer_::copySamplesToOutputBuffer(int startSample, int numSamples){
-      memcpy(&outputFrames_[0], &buffer_.dataPointer()[startSample], numSamples * sizeof(TonicFloat));
+      if (numSamples)
+        memcpy(&outputFrames_[0], &buffer_.dataPointer()[startSample], numSamples * sizeof(TonicFloat));
     }
     
     

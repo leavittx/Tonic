@@ -47,7 +47,8 @@ namespace Tonic {
     return &layouts[numChannels - 1];
   }
 
-  int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, int channels, TonicFloat* decodeBuffer) {
+  int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, int channels, 
+             TonicFloat* decodeBuffer, int maxOutputFrames) {
     int i, ch;
     int ret, dataSize;
     int framesCount;
@@ -80,7 +81,7 @@ namespace Tonic {
 
       // Resample frames
       framesCount = swr_convert(swr,
-                               (uint8_t**)&decodeBuffer, frame->nb_samples,      // out
+                               (uint8_t**)&decodeBuffer, std::min(frame->nb_samples, maxOutputFrames), // out
                                (const uint8_t**)frame->data, frame->nb_samples); // in
       if (framesCount > 0) {
         int samplesCount = framesCount * channels;
@@ -194,13 +195,14 @@ namespace Tonic {
     while (av_read_frame(format, pkt) >= 0) {
       // Decode audio frames one by one
       if (pkt->size) {
-        auto decodedFrames = decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr);
+        auto decodedFrames = decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr, numFrames);
         if (decodedFrames < 0) {
           cerr << "Error decoding audio frames" << endl;
           return nullptr;
         }
         int decodedSamples = decodedFrames * numChannels;
         decodeDataPtr += decodedSamples;
+        numFrames -= decodedFrames;
         totalDecodedFrames += decodedFrames;
         //cerr << "decoded frames: " << decodedFrames << "; decodedSamples: " << decodedSamples << endl;
       }
@@ -215,7 +217,7 @@ namespace Tonic {
     // Flush the decoder
     pkt->data = nullptr;
     pkt->size = 0;
-    decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr);
+    decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr, numFrames);
 
     // Cleanup
     av_packet_free(&pkt);

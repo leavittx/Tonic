@@ -381,6 +381,27 @@ namespace Tonic {
         
         return *this;
       }
+
+      // Move assignment - transfers ownership without ref count changes
+      TonicSmartPointer& operator=(TonicSmartPointer&& r) noexcept {
+        if(obj == r.obj) return *this;
+
+        release();
+        
+        obj = r.obj;
+        pcount = r.pcount;
+        
+        r.obj = nullptr;
+        r.pcount = nullptr;
+        
+        return *this;
+      }
+    
+      // Move constructor - transfers ownership without incrementing ref count
+      TonicSmartPointer(TonicSmartPointer&& r) noexcept : obj(r.obj), pcount(r.pcount) {
+        r.obj = nullptr;
+        r.pcount = nullptr;
+      }
       
       ~TonicSmartPointer(){
         release();
@@ -404,6 +425,11 @@ namespace Tonic {
         return obj == r.obj;
       }
     
+    
+      // Explicit bool conversion
+      explicit operator bool() const noexcept {
+        return obj != nullptr;
+      }
   };
 
   
