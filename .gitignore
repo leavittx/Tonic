@@ -141,3 +141,4 @@ lib/iOS/
 #
 # ...none. Everything is now explained.
 /lib/cmake/install*
+/.vs*
