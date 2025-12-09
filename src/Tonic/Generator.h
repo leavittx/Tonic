@@ -15,6 +15,7 @@
 #include "TonicFrames.h"
 #include "SynthesisContext.h"
 #include <cmath>
+#include <thread>
 
 namespace stk
 {
@@ -60,6 +61,8 @@ namespace Tonic {
       // Each generator outputs samples to this sample array
       TonicFrames     outputFrames_;
       unsigned long   lastFrameIndex_;
+      // Ensure we destroy on same thread we create the object
+      std::thread::id owningThreadId_;
       
     };
     
