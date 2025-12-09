@@ -23,7 +23,7 @@ namespace Tonic {
       limiter_.setIsStereo(true);
     }
 
-    void Synth_::setParameter(string name, float value, bool normalized){
+    void Synth_::setParameter(std::string name, float value, bool normalized){
       
       if (parameters_.find(name)!=parameters_.end()) {
         
@@ -43,7 +43,7 @@ namespace Tonic {
 
     }
     
-    ControlParameter Synth_::addParameter(string name, TonicFloat initialValue)
+    ControlParameter Synth_::addParameter(std::string name, TonicFloat initialValue)
     {
       if (parameters_.find(name) == parameters_.end())
       {
@@ -55,21 +55,21 @@ namespace Tonic {
     }
     
     void Synth_::addParameter(ControlParameter parameter){
-      string name = parameter.getName();
+      std::string name = parameter.getName();
       parameters_[name] = parameter;
       orderedParameterNames_.push_back(name);
     }
     
     void Synth_::addParametersFromSynth(Synth synth){
-      vector<ControlParameter> params = synth.getParameters();
+      std::vector<ControlParameter> params = synth.getParameters();
       for (unsigned int i=0; i<params.size(); i++)
         addParameter(params[i]);
     }
     
-    vector<ControlParameter> Synth_::getParameters(){
-      vector<ControlParameter> returnParams;
-      for (std::vector<string>::iterator it = orderedParameterNames_.begin(); it != orderedParameterNames_.end(); it++){
-        std::map<string, ControlParameter>::iterator paramIt = parameters_.find(*it);
+    std::vector<ControlParameter> Synth_::getParameters(){
+      std::vector<ControlParameter> returnParams;
+      for (std::vector<std::string>::iterator it = orderedParameterNames_.begin(); it != orderedParameterNames_.end(); it++){
+        std::map<std::string, ControlParameter>::iterator paramIt = parameters_.find(*it);
         if (paramIt != parameters_.end()){
           returnParams.push_back(paramIt->second);
         }
@@ -78,13 +78,13 @@ namespace Tonic {
     }
     
     void Synth_::sendControlChangesToSubscribers(){
-      vector<ControlChangeNotifier>::iterator it = controlChangeNotifiersList_.begin();
+      std::vector<ControlChangeNotifier>::iterator it = controlChangeNotifiersList_.begin();
       for (; it != controlChangeNotifiersList_.end(); it++) {
         it->sendControlChangesToSubscribers();
       }
     }
     
-    void Synth_::addControlChangeSubscriber(string name, ControlChangeSubscriber* resp){
+    void Synth_::addControlChangeSubscriber(std::string name, ControlChangeSubscriber* resp){
       if(controlChangeNotifiers_.find(name) != controlChangeNotifiers_.end()){
         controlChangeNotifiers_[name].addValueChangedSubscriber(resp);
       }else{
@@ -93,19 +93,19 @@ namespace Tonic {
     }
     
     void Synth_::addControlChangeSubscriber(ControlChangeSubscriber* sub){
-      for(vector<ControlChangeNotifier>::iterator it = controlChangeNotifiersList_.begin(); it != controlChangeNotifiersList_.end(); it++){
+      for(std::vector<ControlChangeNotifier>::iterator it = controlChangeNotifiersList_.begin(); it != controlChangeNotifiersList_.end(); it++){
         it->addValueChangedSubscriber(sub);
       }
     }
     
     void Synth_::removeControlChangeSubscriber(ControlChangeSubscriber* sub){
-      vector<ControlChangeNotifier>::iterator it = controlChangeNotifiersList_.begin();
+      std::vector<ControlChangeNotifier>::iterator it = controlChangeNotifiersList_.begin();
       for (; it != controlChangeNotifiersList_.end(); it++) {
         it->removeValueChangedSubscriber(sub);
       }
     }
     
-    ControlChangeNotifier Synth_::publishChanges(ControlGenerator input, string name){
+    ControlChangeNotifier Synth_::publishChanges(ControlGenerator input, std::string name){
       ControlChangeNotifier messenger;
       messenger.setName(name);
       messenger.input(input);

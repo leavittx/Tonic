@@ -21,13 +21,13 @@ void BasicPolyphonicAllocator2::addVoice(Generator gen, Synth synth, int instanc
   for (auto& param : params)
   {
     size_t paramIdx = 0;
-    if (param.getName().find(paramPrefix + "freq") != string::npos)
+    if (param.getName().find(paramPrefix + "freq") != std::string::npos)
       paramIdx = 0;
-    else if (param.getName().find(paramPrefix + "polyGate") != string::npos)
+    else if (param.getName().find(paramPrefix + "polyGate") != std::string::npos)
       paramIdx = 1;
-    else if (param.getName().find(paramPrefix + "polyVelocity") != string::npos)
+    else if (param.getName().find(paramPrefix + "polyVelocity") != std::string::npos)
       paramIdx = 2;
-    else if (param.getName().find(paramPrefix + "polyVoiceNumber") != string::npos)
+    else if (param.getName().find(paramPrefix + "polyVoiceNumber") != std::string::npos)
       paramIdx = 3;
     else
       continue;
@@ -49,7 +49,7 @@ void BasicPolyphonicAllocator2::noteOn(int note, float velocity)
     return;
   }
 
-  cerr << ">> " << "Starting note " << note << " on voice " << voiceNumber << "\n";
+  std::cerr << ">> " << "Starting note " << note << " on voice " << voiceNumber << std::endl;
 
   PolyVoice& voice = voiceData[voiceNumber];
 
@@ -64,7 +64,7 @@ void BasicPolyphonicAllocator2::noteOn(int note, float velocity)
     //voice.synth.setParameter("polyVelocity", velocity);
     //voice.synth.setParameter("polyVoiceNumber", voiceNumber);
 
-    cerr << "Param name: " << voiceIdxToParams[voiceNumber][0].getName() << endl;
+    std::cerr << "Param name: " << voiceIdxToParams[voiceNumber][0].getName() << std::endl;
 
     voiceIdxToParams[voiceNumber][0].value(mtof(note));
     voiceIdxToParams[voiceNumber][1].value(1.0);
@@ -78,7 +78,7 @@ void BasicPolyphonicAllocator2::noteOn(int note, float velocity)
   activeVoiceQueue.push_back(voiceNumber);
   inactiveVoiceQueue.remove(voiceNumber);
 
-  cerr << "Active voices: " << activeVoiceQueue.size() << endl;
+  std::cerr << "Active voices: " << activeVoiceQueue.size() << std::endl;
 }
 
 void BasicPolyphonicAllocator2::noteOff(int note)
@@ -89,7 +89,7 @@ void BasicPolyphonicAllocator2::noteOff(int note)
     PolyVoice& voice = voiceData[voiceNumber];
     if (voice.currentNote == note)
     {
-      cerr << ">> " << "Stopping note " << note << " on voice " << voiceNumber << "\n";
+      std::cerr << ">> " << "Stopping note " << note << " on voice " << voiceNumber << std::endl;
 
       if (voice.gen.isInstrument())
       {

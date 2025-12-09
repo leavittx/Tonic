@@ -28,7 +28,7 @@ namespace Tonic { namespace Tonic_{
   
   void  ControlChangeNotifier_::sendControlChangesToSubscribers(){
     if(outputReadyToBeSentToUI){
-      for(vector<ControlChangeSubscriber*>::iterator it = subscribers.begin(); it != subscribers.end(); it++){
+      for(std::vector<ControlChangeSubscriber*>::iterator it = subscribers.begin(); it != subscribers.end(); it++){
         (*it)->valueChanged(name, outputToSendToUI.value);
       }
       outputReadyToBeSentToUI = false;

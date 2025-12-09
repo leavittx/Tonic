@@ -22,7 +22,7 @@ namespace Tonic {
       
     protected:
       void computeOutput(const SynthesisContext_ & context);
-      vector<bool> sequence_;
+      std::vector<bool> sequence_;
       ControlGenerator trigger_;
       ControlGenerator loop_;
       int step;
@@ -30,7 +30,7 @@ namespace Tonic {
     public:
       ControlTriggerFilter_();
       ~ControlTriggerFilter_();
-      void sequence(string);
+      void sequence(std::string);
       void trigger(ControlGenerator);
       void setLoop(ControlGenerator);
     };
@@ -48,7 +48,7 @@ namespace Tonic {
   
   TONIC_MAKE_CTRL_GEN_SETTERS(ControlTriggerFilter, trigger, trigger)
   TONIC_MAKE_CTRL_GEN_SETTERS(ControlTriggerFilter, loop, setLoop)
-  ControlTriggerFilter sequence(string seqArg){gen()->sequence(seqArg); return *this;};
+  ControlTriggerFilter sequence(std::string seqArg){gen()->sequence(seqArg); return *this;};
 
   };
 }

@@ -29,7 +29,7 @@ namespace Tonic {
       // Erase \n on the end of the ffmpeg's error string
       auto len = strlen(buffer);
       buffer[len - 1] = '\0';
-      cerr << "FFmpeg | " << buffer << endl;
+      std::cerr << "FFmpeg | " << buffer << std::endl;
     }
   }
 
@@ -41,7 +41,7 @@ namespace Tonic {
     };
     if (numChannels > sizeof(layouts) / sizeof(AVChannelLayout))
     {
-      cerr << numChannels << " output channels not supported" << endl;
+      std::cerr << numChannels << " output channels not supported" << std::endl;
       return nullptr;
     }
     return &layouts[numChannels - 1];
@@ -57,7 +57,7 @@ namespace Tonic {
     ret = avcodec_send_packet(decCtx, pkt);
     if (ret < 0) {
       // Just wait for the next valid packet. https://github.com/bytedeco/javacv/issues/1679#issuecomment-892606462
-      cerr << "Error submitting the packet to the decoder" << endl;
+      std::cerr << "Error submitting the packet to the decoder" << std::endl;
       return 0;
     }
 
@@ -66,15 +66,15 @@ namespace Tonic {
     while (true) {
       ret = avcodec_receive_frame(decCtx, frame);
       if (ret == AVERROR(EAGAIN)) {
-        //cerr << "EAGAIN" << endl;
+        //std::cerr << "EAGAIN" << std::endl;
         return numFramesTotal;
       }
       else if (ret == AVERROR_EOF) {
-        //cerr << "EOF" << endl;
+        //std::cerr << "EOF" << std::endl;
         return numFramesTotal;
       }
       else if (ret < 0) {
-        cerr << "Error during decoding" << endl;
+        std::cerr << "Error during decoding" << std::endl;
         return -1;
       }
       dataSize = av_get_bytes_per_sample(decCtx->sample_fmt);
@@ -91,7 +91,7 @@ namespace Tonic {
     }
   }
   
-  std::unique_ptr<SampleTable> loadAudioFile(string path, int numChannels) {
+  std::unique_ptr<SampleTable> loadAudioFile(std::string path, int numChannels) {
     const AVCodec* codec;
     AVCodecContext* codecCtx = nullptr;
     int ret;
@@ -104,11 +104,11 @@ namespace Tonic {
     // Get format from audio file
     AVFormatContext* format = avformat_alloc_context();
     if (avformat_open_input(&format, path.data(), nullptr, nullptr) != 0) {
-      cerr << "Could not open file " << path.data() << endl;
+      std::cerr << "Could not open file " << path.data() << std::endl;
       return nullptr;
     }
     if (avformat_find_stream_info(format, nullptr) < 0) {
-      cerr << "Could not retrieve stream info from file " << path.data() << endl;
+      std::cerr << "Could not retrieve stream info from file " << path.data() << std::endl;
       return nullptr;
     }
 
@@ -121,7 +121,7 @@ namespace Tonic {
       }
     }
     if (streamIndex == -1) {
-      cerr << "Could not retrieve audio stream from file " << path.data() << endl;
+      std::cerr << "Could not retrieve audio stream from file " << path.data() << std::endl;
       return nullptr;
     }
     AVStream* stream = format->streams[streamIndex];
@@ -129,7 +129,7 @@ namespace Tonic {
     // find & open codec
     codecCtx = avcodec_alloc_context3(nullptr);
     if (!codecCtx) {
-      cerr << "Unable to allocate memory for codec context" << endl;
+      std::cerr << "Unable to allocate memory for codec context" << std::endl;
       return nullptr;
     }
 
@@ -142,7 +142,7 @@ namespace Tonic {
     codec = avcodec_find_decoder(codecCtx->codec_id);
 
     if (avcodec_open2(codecCtx, codec, nullptr) < 0) {
-      cerr << "Failed to open decoder for stream #" << streamIndex << " in file " << path.data() << endl;
+      std::cerr << "Failed to open decoder for stream #" << streamIndex << " in file " << path.data() << std::endl;
       return nullptr;
     }
 
@@ -161,18 +161,18 @@ namespace Tonic {
                             &codecCtx->ch_layout, codecCtx->sample_fmt, codecCtx->sample_rate, 
                             0, nullptr) < 0)
     {
-      cerr << "Failed to alloc and setup resampler" << endl;
+      std::cerr << "Failed to alloc and setup resampler" << std::endl;
       return nullptr;
     }
 
     if (swr_init(swr) < 0) {
-      cerr << "Could not open resample context" << endl;
+      std::cerr << "Could not open resample context" << std::endl;
       swr_free(&swr);
       return nullptr;
     }
 
     if (!swr_is_initialized(swr)) {
-      cerr << "Resampler has not been properly initialized" << endl;
+      std::cerr << "Resampler has not been properly initialized" << std::endl;
       return nullptr;
     }
 
@@ -181,13 +181,13 @@ namespace Tonic {
     std::unique_ptr<SampleTable> destinationTable = std::make_unique<SampleTable>(numFrames, numChannels);
     TonicFloat* decodeDataPtr = destinationTable->dataPointer();
     if (decodeDataPtr == nullptr) {
-      cerr << "decodeDataPtr is nullptr" << endl;
+      std::cerr << "decodeDataPtr is nullptr" << std::endl;
       return nullptr;
     }
 
     AVFrame* frame = av_frame_alloc();
     if (!frame) {
-      cerr << "Error allocating the frame" << endl;
+      std::cerr << "Error allocating the frame" << std::endl;
       return nullptr;
     }
 
@@ -197,17 +197,17 @@ namespace Tonic {
       if (pkt->size) {
         auto decodedFrames = decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr, numFrames);
         if (decodedFrames < 0) {
-          cerr << "Error decoding audio frames" << endl;
+          std::cerr << "Error decoding audio frames" << std::endl;
           return nullptr;
         }
         int decodedSamples = decodedFrames * numChannels;
         decodeDataPtr += decodedSamples;
         numFrames -= decodedFrames;
         totalDecodedFrames += decodedFrames;
-        //cerr << "decoded frames: " << decodedFrames << "; decodedSamples: " << decodedSamples << endl;
+        //std::cerr << "decoded frames: " << decodedFrames << "; decodedSamples: " << decodedSamples << std::endl;
       }
     }
-    cerr << "loadAudioFile | totalDecodedFrames: " << totalDecodedFrames << "; numFrames: " << numFrames << endl; 
+    std::cerr << "loadAudioFile | totalDecodedFrames: " << totalDecodedFrames << "; numFrames: " << numFrames << std::endl; 
     // totalDecodedFrames: 661426; numFrames: 663552
     // Shrink the sample table to actual size
     if (totalDecodedFrames < numFrames) {

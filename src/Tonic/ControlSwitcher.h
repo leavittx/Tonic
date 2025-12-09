@@ -23,7 +23,7 @@ namespace Tonic {
     protected:
       void computeOutput(const SynthesisContext_ & context);
      
-      vector<ControlGenerator>          inputs_;
+      std::vector<ControlGenerator>     inputs_;
       ControlGenerator                  inputIndex_;
       ControlGenerator                  doesWrap_;
       ControlGenerator                  addAfterWrap_;
@@ -36,11 +36,11 @@ namespace Tonic {
       
       ControlSwitcher_();
       void addInput(ControlGenerator input);
-      void setInputs( vector<ControlGenerator> inputs );
+      void setInputs( std::vector<ControlGenerator> inputs );
       void setInputIndex(ControlGenerator inputIndexArg);
       void setDoesWrap(ControlGenerator doesWrap);
       void setAddAfterWrap(ControlGenerator addAfterWrap);
-      void  setTriggerForIndex(ControlGenerator trigger, int index);
+      void setTriggerForIndex(ControlGenerator trigger, int index);
       
     };
     
@@ -56,7 +56,7 @@ namespace Tonic {
     
   public:
     
-    ControlSwitcher & setFloatInputs( vector<float> inputs );
+    ControlSwitcher & setFloatInputs( std::vector<float> inputs );
     
     TONIC_MAKE_CTRL_GEN_SETTERS(ControlSwitcher, addInput, addInput);
     TONIC_MAKE_CTRL_GEN_SETTERS(ControlSwitcher, inputIndex, setInputIndex);

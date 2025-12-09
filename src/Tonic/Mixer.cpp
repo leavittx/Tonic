@@ -24,7 +24,7 @@ namespace Tonic {
     
     void Mixer_::removeInput(BufferFiller input)
     {
-      vector<BufferFiller>::iterator it = std::find(inputs_.begin(), inputs_.end(), input);
+      std::vector<BufferFiller>::iterator it = std::find(inputs_.begin(), inputs_.end(), input);
       if (it != inputs_.end()){
         inputs_.erase(it);
       }

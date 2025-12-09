@@ -25,7 +25,7 @@ namespace Tonic {
     class Adder_ : public Generator_ {
       
     protected:
-      vector<Generator> inputs_;
+      std::vector<Generator> inputs_;
       TonicFrames workSpace_;
       
       void computeSynthesisBlock( const SynthesisContext_ &context );
@@ -205,7 +205,7 @@ namespace Tonic {
     class Multiplier_ : public Generator_{
       
     protected:
-      vector<Generator> inputs_;
+      std::vector<Generator> inputs_;
       TonicFrames workSpace_;
       
       void computeSynthesisBlock( const SynthesisContext_ & context );

@@ -87,8 +87,6 @@ extern "C" {
 #endif
 
 
-using namespace std;
-
 typedef uint32_t              TonicUInt32;
 typedef int32_t               TonicInt32;
 typedef float                 TonicFloat;
@@ -281,16 +279,16 @@ namespace Tonic {
 
   //! Tonic exception class
   // May want to implement custom exception behavior here, but for now, this is essentially a typedef
-  class TonicException : public runtime_error
+  class TonicException : public std::runtime_error
   {
     public:
-    TonicException(string const& error) : runtime_error(error) {};
+    TonicException(std::string const& error) : std::runtime_error(error) {};
 
   };
   
   // -- Logging --
   
-  static void error(string message, bool fatal = false){
+  static void error(std::string message, bool fatal = false){
     // maybe also log to console?
     printf("Tonic::error: %s\n", message.c_str() );
     if (fatal){
@@ -298,11 +296,11 @@ namespace Tonic {
     }
   }
   
-  static void warning(string message){
+  static void warning(std::string message){
     printf("Tonic::warning: %s\n", message.c_str());
   }
   
-  static void debug(string message){
+  static void debug(std::string message){
 #ifdef TONIC_DEBUG
     printf("Tonic::debug: %s\n", message.c_str());
 #endif
@@ -314,23 +312,23 @@ namespace Tonic {
     
     protected:
       
-      typedef std::map<string, T> TonicDictionaryMap;
+      typedef std::map<std::string, T> TonicDictionaryMap;
       TonicDictionaryMap dictionaryMap_;
       
     public:
       
       //! Add object to dictionary. Replaces old object if one exists.
-      void insertObject(string name, T object){
+      void insertObject(std::string name, T object){
         dictionaryMap_[name] = object;
       }
       
-      bool containsObjectNamed(string name){
+      bool containsObjectNamed(std::string name){
         typename TonicDictionaryMap::iterator it = dictionaryMap_.find(name);
         return it != dictionaryMap_.end();
       }
       
       //! Returns object with given name. Returns new object if no object has been set for name, does not insert it.
-      T objectNamed(string name){
+      T objectNamed(std::string name){
         T obj;
         typename TonicDictionaryMap::iterator it = dictionaryMap_.find(name);
         if (it != dictionaryMap_.end()){
@@ -340,7 +338,7 @@ namespace Tonic {
       }
       
       //! Remove object for name
-      void removeObjectNamed(string name){
+      void removeObjectNamed(std::string name){
         typename TonicDictionaryMap::iterator it = dictionaryMap_.find(name);
         if (it != dictionaryMap_.end()){
           dictionaryMap_.erase(it);

@@ -38,7 +38,7 @@ namespace Tonic {
       
       void computeOutput( const SynthesisContext_ & context );
       
-      vector<ControlGenerator> inputs;
+      std::vector<ControlGenerator> inputs;
       
     };
     
@@ -186,7 +186,7 @@ namespace Tonic {
       
       void computeOutput( const SynthesisContext_ & context );
       
-      vector<ControlGenerator> inputs;
+      std::vector<ControlGenerator> inputs;
       
     };
     

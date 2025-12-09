@@ -68,9 +68,9 @@ public:
 
 protected:
 	virtual int getNextVoice(int note);
-	vector<PolyVoice> voiceData;
-	list<int> inactiveVoiceQueue;
-	list<int> activeVoiceQueue;
+	std::vector<PolyVoice> voiceData;
+	std::list<int> inactiveVoiceQueue;
+	std::list<int> activeVoiceQueue;
   int lastVoiceIdx{ -1 };
   std::map<int, std::array<ControlParameter, 4>> voiceIdxToParams;
 };

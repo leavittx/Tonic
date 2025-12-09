@@ -53,7 +53,7 @@ namespace Tonic {
           grani_.openFile(path, typeRaw);
         }
         catch (stk::StkError&) {
-          cerr << "error" << endl;
+          std::cerr << "error" << std::endl;
           fileLoaded_ = false;
           return;
         }
@@ -61,7 +61,7 @@ namespace Tonic {
         fileLoaded_ = true;
 
         if (grani_.channelsOut() != 2) {
-          cerr << "channels: " << grani_.channelsOut() << endl;
+          std::cerr << "channels: " << grani_.channelsOut() << std::endl;
         }
       }
     }

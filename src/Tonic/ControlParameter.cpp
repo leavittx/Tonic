@@ -53,20 +53,20 @@ namespace Tonic { namespace Tonic_{
 } // Namespace Tonic_
   
 
-  string ControlParameter::getName(){
+  std::string ControlParameter::getName(){
     return gen()->getName();
   }
 
-  ControlParameter &  ControlParameter::name(string name){
+  ControlParameter &  ControlParameter::name(std::string name){
     gen()->setName(name);
     return *this;
   }
 
-  string ControlParameter::getDisplayName(){
+  std::string ControlParameter::getDisplayName(){
     return gen()->getDisplayName();
   }
 
-  ControlParameter &  ControlParameter::displayName(string displayName){
+  ControlParameter &  ControlParameter::displayName(std::string displayName){
     gen()->setDisplayName(displayName);
     return *this;
   }

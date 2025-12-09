@@ -23,7 +23,7 @@ namespace Tonic {
       
     protected:
     
-      list<float> vals;
+      std::list<float> vals;
       ControlGenerator x;
       ControlGenerator y;
       
@@ -53,7 +53,7 @@ namespace Tonic {
           vals.pop_front();
         }
         float total = 0;
-        for(list<float>::iterator it = vals.begin(); it != vals.end(); it++){
+        for(std::list<float>::iterator it = vals.begin(); it != vals.end(); it++){
           total += *it;
         }
         output_.value = total / vals.size();

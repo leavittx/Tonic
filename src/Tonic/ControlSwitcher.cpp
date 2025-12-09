@@ -50,7 +50,7 @@ namespace Tonic {
         int cleanedInput = doesWrapOut.value ? currentInputIndex_ % inputs_.size() : clamp(currentInputIndex_, 0, inputs_.size() -1 );
         
         int index = 0;
-        for(vector<ControlGenerator>::iterator it = inputs_.begin(); it != inputs_.end(); it++){
+        for(std::vector<ControlGenerator>::iterator it = inputs_.begin(); it != inputs_.end(); it++){
           ControlGeneratorOutput tempOut = it->tick(context);
           if (index++ == cleanedInput) {
               output_ = tempOut;
@@ -76,7 +76,7 @@ namespace Tonic {
       inputs_.push_back(input);
     }
     
-    void ControlSwitcher_::setInputs(vector<ControlGenerator> inputs)
+    void ControlSwitcher_::setInputs(std::vector<ControlGenerator> inputs)
     {
       inputs_ = inputs;
     }
@@ -105,11 +105,11 @@ namespace Tonic {
     return *this;
   }
   
-  ControlSwitcher & ControlSwitcher::setFloatInputs(vector<float> inputs){
+  ControlSwitcher & ControlSwitcher::setFloatInputs(std::vector<float> inputs){
     
-    vector<ControlGenerator> newInputs;
+    std::vector<ControlGenerator> newInputs;
     
-    for(vector<float>::iterator it = inputs.begin(); it != inputs.end(); it++){
+    for(std::vector<float>::iterator it = inputs.begin(); it != inputs.end(); it++){
       newInputs.push_back(ControlValue(*it));
     }
     

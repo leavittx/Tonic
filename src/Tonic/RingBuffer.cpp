@@ -24,7 +24,7 @@ namespace Tonic {
       s_RingBuffers_.removeObjectNamed(tableName_);
     }
     
-    void RingBufferWriter_::initRingBuffer(string name, unsigned int nFrames, unsigned int nChannels){
+    void RingBufferWriter_::initRingBuffer(std::string name, unsigned int nFrames, unsigned int nChannels){
      
       RingBuffer table = RingBuffer(nFrames, nChannels);
       
@@ -45,7 +45,7 @@ namespace Tonic {
     }
   }
   
-  RingBufferReader & RingBufferReader::bufferName(string name){
+  RingBufferReader & RingBufferReader::bufferName(std::string name){
 
     if (s_RingBuffers_.containsObjectNamed(name)){      
       gen()->setRingBuffer(s_RingBuffers_.objectNamed(name));
@@ -56,7 +56,7 @@ namespace Tonic {
     return *this;
   }
   
-  RingBufferWriter::RingBufferWriter(string name, unsigned int nFrames, unsigned int nChannels)
+  RingBufferWriter::RingBufferWriter(std::string name, unsigned int nFrames, unsigned int nChannels)
   {
     obj = new Tonic_::RingBufferWriter_();
     obj->initRingBuffer(name, nFrames, nChannels);

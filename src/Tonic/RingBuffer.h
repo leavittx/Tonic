@@ -218,13 +218,13 @@ namespace Tonic {
     protected:
       
       RingBuffer ringBuffer_;
-      string tableName_;
+      std::string tableName_;
       
     public:
       
       ~RingBufferWriter_();
       
-      void initRingBuffer(string name, unsigned int nFrames, unsigned int nChannels);
+      void initRingBuffer(std::string name, unsigned int nFrames, unsigned int nChannels);
       void write(float *data, unsigned int nFrames, unsigned int nChannels);
       void reset();
       
@@ -243,7 +243,7 @@ namespace Tonic {
     
     public:
         
-      RingBufferReader & bufferName(string name);
+      RingBufferReader & bufferName(std::string name);
     
   };
   
@@ -254,7 +254,7 @@ namespace Tonic {
     public:
     
       RingBufferWriter() : TonicSmartPointer<Tonic_::RingBufferWriter_>(new Tonic_::RingBufferWriter_) {}
-      RingBufferWriter(string name, unsigned int nFrames, unsigned int nChannels);
+      RingBufferWriter(std::string name, unsigned int nFrames, unsigned int nChannels);
       
       void write(float *data, unsigned int nFrames, unsigned int nChannels){
         obj->write(data, nFrames, nChannels);

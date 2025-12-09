@@ -34,12 +34,12 @@ namespace Tonic{
       Limiter limiter_;
       bool limitOutput_;
       
-      std::map<string, ControlParameter> parameters_;
-      std::vector<string> orderedParameterNames_;
-      std::map<string, ControlChangeNotifier> controlChangeNotifiers_;
-      vector<ControlChangeNotifier> controlChangeNotifiersList_;
+      std::map<std::string, ControlParameter> parameters_;
+      std::vector<std::string> orderedParameterNames_;
+      std::map<std::string, ControlChangeNotifier> controlChangeNotifiers_;
+      std::vector<ControlChangeNotifier> controlChangeNotifiersList_;
       // ControlGenerators that may not be part of the synthesis graph, but should be ticked anyway
-      vector<ControlGenerator> auxControlGenerators_;
+      std::vector<ControlGenerator> auxControlGenerators_;
       
       void computeSynthesisBlock(const Tonic::Tonic_::SynthesisContext_ &context);
       
@@ -53,17 +53,17 @@ namespace Tonic{
       
       void setLimitOutput(bool shouldLimit) { limitOutput_ = shouldLimit; };
       
-      ControlParameter addParameter(string name, TonicFloat initialValue);
+      ControlParameter addParameter(std::string name, TonicFloat initialValue);
       
       void addParameter(ControlParameter parameter);
       
       void addParametersFromSynth(Synth synth);
       
-      void setParameter(string name, float value, bool normalized = false);
+      void setParameter(std::string name, float value, bool normalized = false);
       
-      vector<ControlParameter>  getParameters();
+      std::vector<ControlParameter>  getParameters();
       
-      ControlChangeNotifier publishChanges(ControlGenerator input, string name);
+      ControlChangeNotifier publishChanges(ControlGenerator input, std::string name);
       
       void addAuxControlGenerator(ControlGenerator generator){
         auxControlGenerators_.push_back(generator);
@@ -75,7 +75,7 @@ namespace Tonic{
       
       void sendControlChangesToSubscribers();
       
-      void addControlChangeSubscriber(string name, ControlChangeSubscriber* resp);
+      void addControlChangeSubscriber(std::string name, ControlChangeSubscriber* resp);
       void addControlChangeSubscriber(ControlChangeSubscriber* resp);
       void removeControlChangeSubscriber(ControlChangeSubscriber* sub);
       
@@ -85,7 +85,7 @@ namespace Tonic{
 
       outputGen_.tick(outputFrames_, context);
       
-      for (vector<ControlGenerator>::iterator it = auxControlGenerators_.begin(); it != auxControlGenerators_.end(); it++) {
+      for (std::vector<ControlGenerator>::iterator it = auxControlGenerators_.begin(); it != auxControlGenerators_.end(); it++) {
         it->tick(context);
       }
       
@@ -120,7 +120,7 @@ namespace Tonic{
     }
     
     //! Add a ControlParameter with name "name"
-    ControlParameter addParameter(string name, TonicFloat initialValue = 0.f)
+    ControlParameter addParameter(std::string name, TonicFloat initialValue = 0.f)
     {
       return gen()->addParameter(name, initialValue);
     }
@@ -145,7 +145,7 @@ namespace Tonic{
       and passing a pointer to that object to Synth::addControlChangeSubscriber.
     */
   
-    ControlChangeNotifier publishChanges(ControlGenerator input, string name=""){
+    ControlChangeNotifier publishChanges(ControlGenerator input, std::string name=""){
       return gen()->publishChanges(input, name);
     }
     
@@ -157,7 +157,7 @@ namespace Tonic{
     }
     
     //! Add an object which will be notified when a particular ControlChangeNotifier changes value or is triggered.
-    void addControlChangeSubscriber(string name, ControlChangeSubscriber* resp){
+    void addControlChangeSubscriber(std::string name, ControlChangeSubscriber* resp){
       gen()->addControlChangeSubscriber(name, resp);
     }
     
@@ -184,14 +184,14 @@ namespace Tonic{
     /*!
         If normalized is true, value will be mapped to defined range of parameter
      */
-    void setParameter(string name, float value = 1.f, bool normalized = false)
+    void setParameter(std::string name, float value = 1.f, bool normalized = false)
     {
       gen()->setParameter(name, value, normalized);
     }
   
     
     //! Get all of the control parameters registered for this synth
-    vector<ControlParameter> getParameters()
+    std::vector<ControlParameter> getParameters()
     {
       return gen()->getParameters();
     }
@@ -224,7 +224,7 @@ namespace Tonic{
     static Synth createInstance(std::string const& s) {
       map_type::iterator it = getMap()->find(s);
       if(it == getMap()->end()){
-        string synthsList = "";
+        std::string synthsList = "";
         
         for(it = getMap()->begin(); it != getMap()->end(); it++){
           synthsList = synthsList + it->first + "\n";

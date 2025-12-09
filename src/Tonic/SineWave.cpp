@@ -12,7 +12,7 @@ namespace Tonic {
   
   SineWave::SineWave(){
     
-    static string const TONIC_SIN_TABLE = "_TONIC_SIN_TABLE_";
+    static std::string const TONIC_SIN_TABLE = "_TONIC_SIN_TABLE_";
     
     // As soon as the first SineWave is allocated, persistent SampleTable is created. Will stay in memory for program lifetime.
     if (!Tonic_::s_oscillatorTables()->containsObjectNamed(TONIC_SIN_TABLE)){

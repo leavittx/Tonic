@@ -20,7 +20,7 @@ namespace Tonic {
   class ControlChangeSubscriber{
     public:
     virtual ~ControlChangeSubscriber(){}
-    virtual void valueChanged(string, TonicFloat)=0;
+    virtual void valueChanged(std::string, TonicFloat)=0;
   };
   
   namespace Tonic_ {
@@ -29,7 +29,7 @@ namespace Tonic {
       
     protected:
       void computeOutput(const SynthesisContext_ & context);
-      vector<ControlChangeSubscriber*> subscribers;
+      std::vector<ControlChangeSubscriber*> subscribers;
       bool outputReadyToBeSentToUI;
       ControlGeneratorOutput outputToSendToUI;
       
@@ -39,7 +39,7 @@ namespace Tonic {
       void addValueChangedSubscriber(ControlChangeSubscriber* sub);
       void removeValueChangedSubscriber(ControlChangeSubscriber* sub);
       void sendControlChangesToSubscribers();
-      string name;
+      std::string name;
     };
     
   }
@@ -56,7 +56,7 @@ namespace Tonic {
     void sendControlChangesToSubscribers();
     void addValueChangedSubscriber(ControlChangeSubscriber* resp){gen()->addValueChangedSubscriber(resp);};
     void removeValueChangedSubscriber(ControlChangeSubscriber* sub){gen()->removeValueChangedSubscriber(sub);};
-    void setName(string name){gen()->name = name;}
+    void setName(std::string name){gen()->name = name;}
 
   };
 }

@@ -23,12 +23,12 @@ namespace Tonic {
     protected:
       void computeOutput(const SynthesisContext_ & context);
       
-      string message;
+      std::string message;
       bool hasPrinted;
       
     public:
       ControlPrinter_();
-      void setMessage(string message);
+      void setMessage(std::string message);
       
     };
     
@@ -50,7 +50,7 @@ namespace Tonic {
   class ControlPrinter : public TemplatedControlConditioner<Tonic::ControlPrinter, Tonic_::ControlPrinter_>{
     
   public:
-    ControlPrinter message(string message){
+    ControlPrinter message(std::string message){
       gen()->setMessage(message);
       return *this;
     }

@@ -27,7 +27,7 @@ namespace Tonic {
     private:
       
       TonicFrames workSpace_;
-      vector<BufferFiller> inputs_;
+      std::vector<BufferFiller> inputs_;
       
       void computeSynthesisBlock(const SynthesisContext_ &context);
       

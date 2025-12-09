@@ -36,8 +36,8 @@ namespace Tonic {
       
     protected:
       
-      string                name_;
-      string                displayName_;
+      std::string           name_;
+      std::string           displayName_;
       TonicFloat            min_;
       TonicFloat            max_;
       ControlParameterType  type_;
@@ -49,11 +49,11 @@ namespace Tonic {
       
       ControlParameter_();
       
-      void        setName( string name ) { name_ = name; };
-      string      getName() { return name_; };
+      void        setName( std::string name ) { name_ = name; };
+      std::string getName() { return name_; };
       
-      void        setDisplayName( string displayName ) { displayName_ = displayName; };
-      string      getDisplayName() { return displayName_; };
+      void        setDisplayName( std::string displayName ) { displayName_ = displayName; };
+      std::string getDisplayName() { return displayName_; };
       
       void        setMin( TonicFloat min ) { min_ = min; };
       TonicFloat  getMin() { return min_; };
@@ -67,8 +67,8 @@ namespace Tonic {
       void        setIsLogarithmic(bool isLogarithmic) { isLogarithmic_ = isLogarithmic; };
       bool        getIsLogarithmic() { return isLogarithmic_; };
 
-      bool              getIsDb() { return isDb_; }
-      void              setIsDb(bool isDb) { isDb_ = isDb; }
+      bool        getIsDb() { return isDb_; }
+      void        setIsDb(bool isDb) { isDb_ = isDb; }
     
       void        setNormalizedValue(TonicFloat normVal);
       TonicFloat  getNormalizedValue();
@@ -81,11 +81,11 @@ namespace Tonic {
     
   public:
         
-    string              getName();
-    ControlParameter &  name(string name);
+    std::string         getName();
+    ControlParameter &  name(std::string name);
 
-    string              getDisplayName();
-    ControlParameter &  displayName(string displayName);
+    std::string         getDisplayName();
+    ControlParameter &  displayName(std::string displayName);
     
     TonicFloat          getValue();
     ControlParameter &  value(TonicFloat value);

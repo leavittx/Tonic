@@ -22,8 +22,8 @@ namespace Tonic {
       
     protected:
       void computeOutput(const SynthesisContext_ & context);
-      vector<ControlGeneratorOutput> recording;
-      vector<ControlGeneratorOutput>::iterator playbackHead;
+      std::vector<ControlGeneratorOutput> recording;
+      std::vector<ControlGeneratorOutput>::iterator playbackHead;
       ControlGenerator mode;
       
     public:

@@ -22,12 +22,12 @@ namespace Tonic {
       
     protected:
       void computeOutput(const SynthesisContext_ & context);
-      vector<float> mScale;
+      std::vector<float> mScale;
       float snap(float number);
       
     public:
 
-      void setScale(vector<float> scale) { mScale = scale; }
+      void setScale(std::vector<float> scale) { mScale = scale; }
       
     };
     
@@ -83,7 +83,7 @@ namespace Tonic {
   
   public:
 
-    ControlSnapToScale setScale(vector<float> scale){
+    ControlSnapToScale setScale(std::vector<float> scale){
       gen()->setScale(scale);
       return *this;
     }
