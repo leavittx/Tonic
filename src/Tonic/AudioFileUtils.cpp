@@ -47,10 +47,10 @@ namespace Tonic {
     return &layouts[numChannels - 1];
   }
 
-  int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, int channels, 
-             TonicFloat* decodeBuffer, int maxOutputFrames) {
+  int decode(AVCodecContext* decCtx, AVPacket* pkt, AVFrame* frame, SwrContext* swr, int channels,
+             std::vector<TonicFloat>& samplesData, int decodedSamples) {
     int i, ch;
-    int ret, dataSize;
+    int ret;
     int framesCount;
 
     // Send the packet with the compressed data to the decoder
@@ -77,15 +77,21 @@ namespace Tonic {
         std::cerr << "Error during decoding" << std::endl;
         return -1;
       }
-      dataSize = av_get_bytes_per_sample(decCtx->sample_fmt);
+      
+      auto samplesRemaining = samplesData.size() - decodedSamples;
+      auto samplesRequired = frame->nb_samples * channels;
+      if (samplesRequired > samplesRemaining) {
+          samplesData.resize(samplesData.size() - samplesRemaining + samplesRequired);
+      }
 
       // Resample frames
+      float* dataPtr = samplesData.data() + decodedSamples;
       framesCount = swr_convert(swr,
-                               (uint8_t**)&decodeBuffer, std::min(frame->nb_samples, maxOutputFrames), // out
+                               (uint8_t**)&dataPtr, frame->nb_samples,           // out
                                (const uint8_t**)frame->data, frame->nb_samples); // in
+      //std::cerr << "Frames count: " << framesCount << std::endl; // 4096 for wav, ~300-1000 for mp3
       if (framesCount > 0) {
-        int samplesCount = framesCount * channels;
-        decodeBuffer += samplesCount;
+        decodedSamples += framesCount * channels;
         numFramesTotal += framesCount;
       }
     }
@@ -177,14 +183,8 @@ namespace Tonic {
     }
 
     float duration = static_cast<float>(format->duration) / AV_TIME_BASE;
-    int numFrames = static_cast<int>(codecCtx->sample_rate * duration);
-    std::unique_ptr<SampleTable> destinationTable = std::make_unique<SampleTable>(numFrames, numChannels);
-    TonicFloat* decodeDataPtr = destinationTable->dataPointer();
-    if (decodeDataPtr == nullptr) {
-      std::cerr << "decodeDataPtr is nullptr" << std::endl;
-      return nullptr;
-    }
-
+    int numFramesEstimation = static_cast<int>(codecCtx->sample_rate * duration);
+    
     AVFrame* frame = av_frame_alloc();
     if (!frame) {
       std::cerr << "Error allocating the frame" << std::endl;
@@ -192,32 +192,37 @@ namespace Tonic {
     }
 
     int totalDecodedFrames = 0;
+    std::vector<TonicFloat> samplesData(numFramesEstimation * numChannels);
     while (av_read_frame(format, pkt) >= 0) {
       // Decode audio frames one by one
       if (pkt->size) {
-        auto decodedFrames = decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr, numFrames);
+        auto totalDecodedSamples = totalDecodedFrames * numChannels;
+        auto decodedFrames = decode(codecCtx, pkt, frame, swr, numChannels, samplesData, totalDecodedSamples);
         if (decodedFrames < 0) {
           std::cerr << "Error decoding audio frames" << std::endl;
           return nullptr;
         }
-        int decodedSamples = decodedFrames * numChannels;
-        decodeDataPtr += decodedSamples;
-        numFrames -= decodedFrames;
         totalDecodedFrames += decodedFrames;
         //std::cerr << "decoded frames: " << decodedFrames << "; decodedSamples: " << decodedSamples << std::endl;
       }
     }
-    std::cerr << "loadAudioFile | totalDecodedFrames: " << totalDecodedFrames << "; numFrames: " << numFrames << std::endl; 
-    // totalDecodedFrames: 661426; numFrames: 663552
-    // Shrink the sample table to actual size
-    if (totalDecodedFrames < numFrames) {
-      destinationTable->resize(totalDecodedFrames, numChannels);
+    std::cerr << "loadAudioFile | totalDecodedFrames: " << totalDecodedFrames << "; numFramesEstimation: " << numFramesEstimation << std::endl; 
+
+    // Shrink the samples data to actual size
+    samplesData.resize(totalDecodedFrames * numChannels);
+
+    std::unique_ptr<SampleTable> destinationTable = std::make_unique<SampleTable>(totalDecodedFrames, numChannels);
+    TonicFloat* destinationTableDataPtr = destinationTable->dataPointer();
+    if (destinationTableDataPtr == nullptr) {
+        std::cerr << "decodeDataPtr is nullptr" << std::endl;
+        return nullptr;
     }
+    memcpy(destinationTableDataPtr, samplesData.data(), samplesData.size() * sizeof(TonicFloat));
 
     // Flush the decoder
     pkt->data = nullptr;
     pkt->size = 0;
-    decode(codecCtx, pkt, frame, swr, numChannels, decodeDataPtr, numFrames);
+    decode(codecCtx, pkt, frame, swr, numChannels, samplesData, 0);
 
     // Cleanup
     av_packet_free(&pkt);
